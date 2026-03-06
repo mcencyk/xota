@@ -4,7 +4,7 @@ import BrandGrid, { BRANDS } from './components/BrandGrid';
 import VariantSelect from './components/VariantSelect';
 import './App.css';
 
-const defaultBrand = BRANDS.find(b => b.id === 'vw');
+const defaultBrand = BRANDS.find(b => b.id === 'audi');
 
 function AppButton({ children, primary }) {
   const [hovered, setHovered] = useState(false);
