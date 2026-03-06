@@ -17,19 +17,13 @@ const cardBase = {
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: 16,
-  border: '1px solid #153f53',
+  border: '2px solid #153f53',
   background: '#012d42',
   boxShadow: '0px 0px 2px 0px rgba(0,0,0,0.24)',
   cursor: 'pointer',
   transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
   position: 'relative',
   overflow: 'hidden',
-};
-
-const cardActive = {
-  background: '#00354d',
-  border: '2px solid #28779c',
-  boxShadow: '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)',
 };
 
 export default function BrandGrid({ selected, onSelect }) {
@@ -44,8 +38,17 @@ export default function BrandGrid({ selected, onSelect }) {
             return (
               <div
                 key={brand.id}
-                style={{ ...cardBase, ...(active ? cardActive : {}) }}
+                style={{
+                  ...cardBase,
+                  ...(active ? {
+                    background: '#00354d',
+                    borderColor: '#28779c',
+                    boxShadow: '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)',
+                  } : {}),
+                }}
                 onClick={() => onSelect(brand)}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#013d58'; e.currentTarget.style.borderColor = '#1e6080'; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = '#012d42'; e.currentTarget.style.borderColor = '#153f53'; } }}
               >
                 <img
                   src={base + brand.logo}

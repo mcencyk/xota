@@ -21,6 +21,7 @@ const EyeOffIcon = () => (
 
 export default function FloatingInput({ label, type = 'text' }) {
   const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [value, setValue]     = useState('');
   const [visible, setVisible] = useState(false);
   const inputRef = useRef(null);
@@ -31,6 +32,8 @@ export default function FloatingInput({ label, type = 'text' }) {
   return (
     <div
       onClick={() => inputRef.current?.focus()}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         flex: 1,
         display: 'flex',
@@ -38,8 +41,8 @@ export default function FloatingInput({ label, type = 'text' }) {
         height: 44,
         paddingRight: isPassword ? 4 : 12,
         borderRadius: 6,
-        border: focused ? '1px solid #28779c' : '1px solid #16506c',
-        background: focused ? 'rgba(0,70,102,0.24)' : 'rgba(0,70,102,0.16)',
+        border: focused ? '1px solid #28779c' : hovered ? '1px solid #2a6a87' : '1px solid #16506c',
+        background: focused ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)',
         boxShadow: focused
           ? '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)'
           : '0px 1px 2px 0px rgba(0,0,0,0.12)',
