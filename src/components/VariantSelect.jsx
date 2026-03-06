@@ -10,6 +10,7 @@ const ChevronIcon = () => (
 
 export default function VariantSelect({ brandName, variants, selected, onSelect }) {
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
@@ -23,13 +24,19 @@ export default function VariantSelect({ brandName, variants, selected, onSelect 
       {/* Trigger */}
       <div
         onClick={() => setOpen(o => !o)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
           height: 32, padding: '4px 8px',
-          borderRadius: 6, border: '1px solid #16506c',
-          background: 'rgba(0,70,102,0.16)',
-          boxShadow: '0px 1px 2px 0px rgba(0,0,0,0.12)',
+          borderRadius: 6,
+          border: open ? '1px solid #28779c' : hovered ? '1px solid #2a6a87' : '1px solid #16506c',
+          background: open ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)',
+          boxShadow: open
+            ? '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)'
+            : '0px 1px 2px 0px rgba(0,0,0,0.12)',
           cursor: 'pointer', userSelect: 'none',
+          transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
         }}
       >
         <span style={{

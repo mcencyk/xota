@@ -6,6 +6,42 @@ import './App.css';
 
 const defaultBrand = BRANDS.find(b => b.id === 'vw');
 
+function AppButton({ children, primary }) {
+  const [hovered, setHovered] = useState(false);
+
+  const base = {
+    padding: '10px 18px', borderRadius: 8,
+    fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
+    letterSpacing: 1.2, textTransform: 'uppercase', color: '#ccdfe9',
+    cursor: 'pointer', transition: 'background 0.15s, box-shadow 0.15s, border-color 0.15s',
+  };
+
+  const style = primary
+    ? {
+        ...base,
+        background: hovered ? '#005a80' : '#004666',
+        border: 'none',
+        boxShadow: hovered
+          ? '0px 2px 8px 0px rgba(0,37,55,0.48)'
+          : '0px 1px 4px 0px rgba(0,37,55,0.32)',
+      }
+    : {
+        ...base,
+        background: hovered ? '#01374f' : '#012d42',
+        border: hovered ? '1px solid #1e6080' : '1px solid #004666',
+      };
+
+  return (
+    <button
+      style={style}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function App() {
   const [activeBrand, setActiveBrand] = useState(defaultBrand);
   const [selectedVariant, setSelectedVariant] = useState(defaultBrand.variants[0]);
@@ -64,23 +100,8 @@ export default function App() {
       {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={{
-            padding: '10px 18px', borderRadius: 8,
-            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
-            letterSpacing: 1.2, textTransform: 'uppercase', color: '#ccdfe9',
-            background: '#012d42', border: '1px solid #004666', cursor: 'pointer',
-          }}>
-            Help
-          </button>
-          <button style={{
-            padding: '10px 18px', borderRadius: 8,
-            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10,
-            letterSpacing: 1.2, textTransform: 'uppercase', color: '#ccdfe9',
-            background: '#004666', border: 'none',
-            boxShadow: '0px 1px 4px 0px rgba(0,37,55,0.32)', cursor: 'pointer',
-          }}>
-            Login
-          </button>
+          <AppButton>Help</AppButton>
+          <AppButton primary>Login</AppButton>
         </div>
       </div>
 
