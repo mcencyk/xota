@@ -14,37 +14,56 @@ const STATUS = {
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 const CAMPAIGNS = [
-  { id: 1,  name: 'Middle Europe Critical Bug Fix',  vehicles: '2 382', code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['RUNNING'] },
-  { id: 2,  name: 'East Europe Break Calibration',   vehicles: '312',   code: 'SE03', crit: '03', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2023-05-22_1017.xlsx', measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['RUNNING'] },
-  { id: 3,  name: 'New Campaign (04)',                vehicles: '645',   code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                              type: 'Checklist', date: '07.08.2024', statuses: ['CREATED'] },
-  { id: 4,  name: 'North America General Software...', vehicles: '462', code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['RUNNING'] },
-  { id: 5,  name: 'New Campaign (05)',                vehicles: '5 686', code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                              type: 'Checklist', date: '12.07.2024', statuses: ['DRAFT'] },
-  { id: 6,  name: 'West Europe Performance Fix',     vehicles: '6 387', code: 'KE05', crit: '05', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_DEMO_04.10.23', type: 'Baseline', date: '21.04.2024', statuses: ['COMPLETED'] },
-  { id: 7,  name: 'Central Europe Critical Bug Fix', vehicles: '52',    code: 'SE03', crit: '05', spec: 'DLCM_ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',       measure: '',                              type: 'Checklist', date: '07.08.2024', statuses: ['RUNNING', 'FAILED'] },
-  { id: 8,  name: 'New Campaign (06)',                vehicles: '7 536', code: 'PU01', crit: '01', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_FINAL_10.06.24', type: 'Baseline', date: '12.07.2024', statuses: ['RUNNING'] },
-  { id: 9,  name: 'North America General Softwa...', vehicles: '84 563', code: 'FA01', crit: '01', spec: 'DLCM_ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',      measure: '',                              type: 'Checklist', date: '12.07.2024', statuses: ['RUNNING'] },
-  { id: 10, name: 'East Europe Break Calibration',   vehicles: '5 756', code: 'SE03', crit: '03', spec: 'DLCM_ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',       measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['COMPLETED'] },
-  { id: 11, name: 'West Europe Performance Fix',     vehicles: '82',    code: 'PU01', crit: '01', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_FINAL_10.06.24', type: 'Baseline', date: '12.07.2024', statuses: ['RUNNING'] },
-  { id: 12, name: 'West Europe Performance Fix',     vehicles: '74',    code: 'KE05', crit: '05', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_FINAL_10.06.24', type: 'Baseline', date: '12.07.2024', statuses: ['RUNNING'] },
-  { id: 13, name: 'North America General Softwa...', vehicles: '3 678', code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['FAILED'] },
-  { id: 14, name: 'Central Europe Critical Bug Fix', vehicles: '253',   code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '07.08.2024', statuses: ['RUNNING'] },
-  { id: 15, name: 'North America General Softwa...', vehicles: '85 365', code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['COMPLETED'] },
-  { id: 16, name: 'North America General Softwa...', vehicles: '634',   code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['COMPLETED'] },
-  { id: 17, name: 'North America General Softwa...', vehicles: '754',   code: 'PU01', crit: '01', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_FINAL_10.06.24', type: 'Baseline', date: '12.07.2024', statuses: ['RUNNING', 'ABORT APPROVAL'] },
-  { id: 18, name: 'West Europe Performance Fix',     vehicles: '8 464', code: 'KE05', crit: '05', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_DEMO_04.10.23', type: 'Baseline', date: '12.07.2024', statuses: ['FAILED'] },
-  { id: 19, name: 'New Campaign (12)',                vehicles: '1 633', code: 'PU01', crit: '01', spec: '',                                                       measure: 'CHANGE_MEASURE_ID_FINAL_10.06.24', type: 'Baseline', date: '21.04.2024', statuses: ['RUNNING'] },
-  { id: 20, name: 'East Europe Break Calibration',   vehicles: '8 674', code: 'SE03', crit: '03', spec: 'DLCM_ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',       measure: '',                              type: 'Checklist', date: '21.04.2024', statuses: ['CREATED'] },
-  { id: 21, name: 'West Europe Performance Fix',     vehicles: '85',    code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '12.07.2024', statuses: ['COMPLETED'] },
-  { id: 22, name: 'North America General Softwa...', vehicles: '63',    code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '07.08.2024', statuses: ['CALCULATED'] },
-  { id: 23, name: 'North America General Softwa...', vehicles: '264',   code: 'FA01', crit: '01', spec: 'DLCM_ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx',  measure: '',                              type: 'Checklist', date: '07.08.2024', statuses: ['CALCULATED'] },
+  { id: 1,  name: 'Middle Europe Critical Bug Fix',    vehicles: '2 382',  code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 2,  name: 'East Europe Brake Calibration',     vehicles: '312',    code: 'SE03', crit: '03', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2023-05-22_1017.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 3,  name: 'Middle East Fleet Diagnostic',      vehicles: '645',    code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CREATED'] },
+  { id: 4,  name: 'North America Software Update',     vehicles: '462',    code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 5,  name: 'Nordic Region Gateway Update',      vehicles: '5 686',  code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['DRAFT'] },
+  { id: 6,  name: 'West Europe Performance Fix',       vehicles: '6 387',  code: 'KE05', crit: '05', spec: '',                                               measure: 'ID_DEMO_04.10.23',   type: 'Full',  date: '21.04.2024', statuses: ['COMPLETED'] },
+  { id: 7,  name: 'Central Europe Critical Hotfix',    vehicles: '52',     code: 'SE03', crit: '05', spec: 'ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',     measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['RUNNING'] },
+  { id: 8,  name: 'Turkey Region Software Patch',      vehicles: '7 536',  code: 'PU01', crit: '01', spec: '',                                               measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 9,  name: 'Pacific Region ECU Calibration',    vehicles: '84 563', code: 'FA01', crit: '01', spec: 'ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',     measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 10, name: 'Baltic Region Brake Calibration',   vehicles: '5 756',  code: 'SE03', crit: '03', spec: 'ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',     measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['COMPLETED'] },
+  { id: 11, name: 'Iberia Powertrain Optimization',    vehicles: '82',     code: 'PU01', crit: '01', spec: '',                                               measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 12, name: 'Alpine Region Software Patch',      vehicles: '74',     code: 'KE05', crit: '05', spec: '',                                               measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 13, name: 'Canada East Drive System Update',   vehicles: '3 678',  code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['FAILED'] },
+  { id: 14, name: 'DACH Region Critical Hotfix',       vehicles: '253',    code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['RUNNING'] },
+  { id: 15, name: 'US West Coast Fleet Update',        vehicles: '85 365', code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['COMPLETED'] },
+  { id: 16, name: 'Mexico Distribution Firmware',      vehicles: '634',    code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['COMPLETED'] },
+  { id: 17, name: 'Southeast Asia Software Full',  vehicles: '754',    code: 'PU01', crit: '01', spec: '',                                               measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 18, name: 'Scandinavia Performance Full',  vehicles: '8 464',  code: 'KE05', crit: '05', spec: '',                                               measure: 'ID_DEMO_04.10.23',   type: 'Full',  date: '12.07.2024', statuses: ['FAILED'] },
+  { id: 19, name: 'Australia Pacific ECU Update',      vehicles: '1 633',  code: 'PU01', crit: '01', spec: '',                                               measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 20, name: 'Eastern Europe Drivetrain Fix',     vehicles: '8 674',  code: 'SE03', crit: '03', spec: 'ID_F.7.5_H1_V2_0_V1_2023-05-22_1017.xlsx',     measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['CREATED'] },
+  { id: 21, name: 'France Region Software Patch',      vehicles: '85',     code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['COMPLETED'] },
+  { id: 22, name: 'US East Coast ECU Calibration',     vehicles: '63',     code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
+  { id: 23, name: 'Brazil South Fleet Firmware',       vehicles: '264',    code: 'FA01', crit: '01', spec: 'ID_S.3.0.5_K1_V6_0-2_V1_2022-09-02_1455.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
 ];
 
+const TAB_TOTAL = { all: 23, active: 15, inactive: 8, mine: 6, attention: 2 };
+const PER_PAGE = 24;
+
+function buildPages(total) {
+  if (total <= 1) return [1];
+  if (total <= 6) return Array.from({ length: total }, (_, i) => i + 1);
+  return [1, 2, 3, '…', total];
+}
+
+const MINE_IDS = new Set([1, 2, 4, 13, 22, 23]);
+
+const TAB_FILTER = {
+  all:       () => true,
+  active:    r => ['RUNNING', 'CALCULATED', 'CREATED'].includes(r.statuses[0]),
+  inactive:  r => ['FAILED', 'DRAFT', 'COMPLETED'].includes(r.statuses[0]),
+  mine:      r => MINE_IDS.has(r.id),
+  attention: r => r.statuses[0] === 'FAILED',
+};
+
 const TABS_TOP = [
-  { id: 'all', label: 'ALL', count: 372 },
-  { id: 'active', label: 'ACTIVE', count: 81 },
-  { id: 'inactive', label: 'INACTIVE', count: 291 },
-  { id: 'mine', label: 'MINE', count: 12 },
-  { id: 'attention', label: 'NEED ATTENTION', count: 7 },
+  { id: 'all', label: 'ALL', count: 23 },
+  { id: 'active', label: 'ACTIVE', count: 15 },
+  { id: 'inactive', label: 'INACTIVE', count: 8 },
+  { id: 'mine', label: 'MINE', count: 6 },
+  { id: 'attention', label: 'NEED ATTENTION', count: 2 },
 ];
 
 const TABS_BOTTOM = ['CAMPAIGNS', 'RECALL CRITERIONS', 'VEHICLES'];
@@ -120,11 +139,12 @@ function SearchIcon() {
 
 function BottomTab({ label, active, onClick }) {
   const [hovered, setHovered] = useState(false);
+  const [plusHovered, setPlusHovered] = useState(false);
   return (
     <button
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseLeave={() => { setHovered(false); setPlusHovered(false); }}
       style={{
         display: 'flex', alignItems: 'center', gap: 6,
         padding: '7px 10px 7px 16px', borderRadius: 8,
@@ -139,11 +159,16 @@ function BottomTab({ label, active, onClick }) {
       }}
     >
       {label}
-      <span style={{
-        width: 20, height: 20, borderRadius: 5,
-        background: 'rgba(255,255,255,0.1)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
+      <span
+        onMouseEnter={e => { e.stopPropagation(); setPlusHovered(true); }}
+        onMouseLeave={e => { e.stopPropagation(); setPlusHovered(false); }}
+        style={{
+          width: 20, height: 20, borderRadius: 5,
+          background: plusHovered ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.1)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 0.15s',
+        }}
+      >
         <PlusIcon />
       </span>
     </button>
@@ -177,7 +202,7 @@ function TopTab({ tab, active, onClick }) {
 
 // ─── Filter panel options ─────────────────────────────────────────────────────
 const FILTER_STATUSES = Object.keys(STATUS);
-const FILTER_TYPES = ['Checklist', 'Baseline'];
+const FILTER_TYPES = ['Partial', 'Full'];
 const FILTER_CODES = ['FA01', 'SE03', 'KE05', 'PU01'];
 
 function FilterPanel({ filters, onChange, activeFilterCount }) {
@@ -332,7 +357,9 @@ export default function DashboardView() {
   const [hoveredCol, setHoveredCol] = useState(null);
   const [hoveredPage, setHoveredPage] = useState(null);
 
-  const sortedCampaigns = [...CAMPAIGNS].sort((a, b) => {
+  const tabFiltered = CAMPAIGNS.filter(TAB_FILTER[activeTopTab] ?? TAB_FILTER.all);
+
+  const sortedCampaigns = [...tabFiltered].sort((a, b) => {
     const va = String(a[sort.key] ?? '');
     const vb = String(b[sort.key] ?? '');
     const cmp = va.localeCompare(vb, undefined, { numeric: true });
@@ -345,6 +372,11 @@ export default function DashboardView() {
       : { key, dir: 'asc' }
     );
   }
+
+  const totalCount = TAB_TOTAL[activeTopTab] ?? 372;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
+  const displayEnd = Math.min(PER_PAGE, totalCount);
+  const pages = buildPages(totalPages);
 
   const activeFilterCount =
     filters.statuses.length +
@@ -375,7 +407,7 @@ export default function DashboardView() {
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
       {/* ── Sidebar ── */}
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
+      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} />
 
       {/* ── Main area ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0, position: 'relative' }}>
@@ -574,10 +606,10 @@ export default function DashboardView() {
               fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.6)',
               fontFamily: "'Inter', sans-serif",
             }}>
-              1 — 24 / 372
+              1 — {displayEnd} / {totalCount}
             </span>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {[1,2,3,'…',16].map((p, i) => (
+            {totalPages > 1 && <div style={{ display: 'flex', gap: 4 }}>
+              {pages.map((p, i) => (
                 <button
                   key={i}
                   onClick={() => typeof p === 'number' && setCurrentPage(p)}
@@ -595,7 +627,7 @@ export default function DashboardView() {
                   {p}
                 </button>
               ))}
-            </div>
+            </div>}
           </div>
         </div>
 

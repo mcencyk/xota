@@ -7,6 +7,48 @@ import './App.css';
 
 const defaultBrand = BRANDS.find(b => b.id === 'audi');
 
+const LOAD_STEPS = [
+  'Connecting to GVU Group servers',
+  'Fetching campaign data',
+  'Loading vehicle fleet information',
+  'Synchronizing update specifications',
+];
+
+function LoaderScreen({ step, visible }) {
+  return (
+    <div style={{
+      opacity: visible ? 1 : 0, transition: 'opacity 0.35s ease',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 36, pointerEvents: 'none',
+    }}>
+      <div style={{ textAlign: 'center', fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>
+        <div style={{ fontSize: 24, letterSpacing: 0.5, color: '#ffffff' }}>GVU</div>
+        <div style={{ fontSize: 8, letterSpacing: 3.5, color: '#ccdfe9', opacity: 0.4, marginTop: 2 }}>PRO</div>
+      </div>
+      <div style={{
+        width: 32, height: 32, borderRadius: '50%',
+        border: '2px solid rgba(128,176,200,0.15)', borderTopColor: '#28a0c8',
+        animation: 'gvuSpin 0.85s linear infinite',
+      }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {LOAD_STEPS.map((s, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: 500, letterSpacing: 0.2,
+            color: i < step ? 'rgba(56,176,96,0.85)' : i === step ? 'rgba(204,223,233,0.9)' : 'rgba(128,176,200,0.2)',
+            transition: 'color 0.35s ease',
+          }}>
+            <span style={{ width: 14, display: 'flex', justifyContent: 'center', fontSize: i < step ? 11 : 13 }}>
+              {i < step ? '✓' : i === step ? '›' : '·'}
+            </span>
+            {s}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth);
   useEffect(() => {
@@ -57,13 +99,47 @@ function AppButton({ children, primary, fullWidth, onClick }) {
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loginVisible, setLoginVisible] = useState(true);
+  const [dashVisible, setDashVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loaderVisible, setLoaderVisible] = useState(false);
+  const [loadStep, setLoadStep] = useState(0);
   const [activeBrand, setActiveBrand] = useState(defaultBrand);
   const [selectedVariant, setSelectedVariant] = useState(defaultBrand.variants[0]);
   const windowWidth = useWindowWidth();
   const isMobile = windowWidth < 560;
 
+  function handleLogin() {
+    setLoginVisible(false);
+    setTimeout(() => {
+      setLoading(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setLoaderVisible(true)));
+      setTimeout(() => setLoadStep(1), 700);
+      setTimeout(() => setLoadStep(2), 1400);
+      setTimeout(() => setLoadStep(3), 2100);
+      setTimeout(() => setLoaderVisible(false), 2800);
+      setTimeout(() => {
+        setLoading(false);
+        setLoggedIn(true);
+        requestAnimationFrame(() => requestAnimationFrame(() => setDashVisible(true)));
+      }, 3200);
+    }, 380);
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh' }}>
+        <LoaderScreen step={loadStep} visible={loaderVisible} />
+      </div>
+    );
+  }
+
   if (loggedIn) {
-    return <DashboardView onLogout={() => setLoggedIn(false)} />;
+    return (
+      <div style={{ opacity: dashVisible ? 1 : 0, transition: 'opacity 0.4s ease', width: '100%', height: '100%' }}>
+        <DashboardView />
+      </div>
+    );
   }
 
   function handleBrandSelect(brand) {
@@ -80,12 +156,14 @@ export default function App() {
         gap: 28,
         paddingTop: 48,
         paddingBottom: 32,
+        opacity: loginVisible ? 1 : 0,
+        transition: 'opacity 0.35s ease',
       }}>
 
         {/* Title */}
         <div style={{ textAlign: 'center', fontFamily: "'Montserrat', sans-serif", fontWeight: 700, padding: '0 16px' }}>
           <div style={{ fontSize: 34, letterSpacing: 0.853, color: '#ffffff', lineHeight: 1.3 }}>
-            CMT
+            GVU
           </div>
           <div style={{ fontSize: 20, letterSpacing: 6, color: '#ccdfe9', opacity: 0.5, lineHeight: 1.3, paddingLeft: 8 }}>
             PRO
@@ -120,7 +198,7 @@ export default function App() {
         {/* Footer */}
         <div style={{ display: 'flex', gap: 8, padding: '0 16px' }}>
           <AppButton fullWidth>Help</AppButton>
-          <AppButton primary fullWidth onClick={() => setLoggedIn(true)}>Login</AppButton>
+          <AppButton primary fullWidth onClick={handleLogin}>Login</AppButton>
         </div>
 
       </div>
@@ -140,12 +218,14 @@ export default function App() {
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
       boxShadow: '0px 0px 16px 0px rgba(0,0,0,0.16)',
+      opacity: loginVisible ? 1 : 0,
+      transition: 'opacity 0.35s ease',
     }}>
 
       {/* Title */}
       <div style={{ textAlign: 'center', fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>
         <div style={{ fontSize: 42.647, letterSpacing: 0.853, color: '#ffffff', lineHeight: 1.3 }}>
-          CMT
+          GVU
         </div>
         <div style={{ fontSize: 25.588, letterSpacing: 8.188, color: '#ccdfe9', opacity: 0.5, lineHeight: 1.3, paddingLeft: 8 }}>
           PRO
@@ -177,7 +257,7 @@ export default function App() {
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <div style={{ display: 'flex', gap: 8 }}>
           <AppButton>Help</AppButton>
-          <AppButton primary onClick={() => setLoggedIn(true)}>Login</AppButton>
+          <AppButton primary onClick={handleLogin}>Login</AppButton>
         </div>
       </div>
 

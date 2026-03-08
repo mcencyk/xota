@@ -15,6 +15,10 @@ body {
   font-weight: 400;
 }
 
+@keyframes gvuSpin {
+  to { transform: rotate(360deg); }
+}
+
 .filter-panel-wrapper {
   display: grid;
   grid-template-rows: 0fr;
