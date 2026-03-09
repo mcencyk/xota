@@ -14,7 +14,13 @@ const LOAD_STEPS = [
   'Synchronizing update specifications',
 ];
 
-function LoaderScreen({ step, visible }) {
+const SWITCH_STEPS = [
+  'Connecting to tenant servers',
+  'Loading brand configuration',
+  'Preparing dashboard',
+];
+
+function LoaderScreen({ step, visible, steps = LOAD_STEPS }) {
   return (
     <div style={{
       opacity: visible ? 1 : 0, transition: 'opacity 0.35s ease',
@@ -31,7 +37,7 @@ function LoaderScreen({ step, visible }) {
         animation: 'gvuSpin 0.85s linear infinite',
       }} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {LOAD_STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 10,
             fontSize: 11, fontFamily: "'Inter', sans-serif", fontWeight: 500, letterSpacing: 0.2,
@@ -106,6 +112,26 @@ export default function App() {
   const [loadStep, setLoadStep] = useState(0);
   const [activeBrand, setActiveBrand] = useState(defaultBrand);
   const [selectedVariant, setSelectedVariant] = useState(defaultBrand.variants[0]);
+  const [switchingTenant, setSwitchingTenant] = useState(false);
+  const [switchLoaderVisible, setSwitchLoaderVisible] = useState(false);
+  const [switchLoadStep, setSwitchLoadStep] = useState(0);
+
+  function handleBrandChange(newBrand) {
+    setDashVisible(false);
+    setTimeout(() => {
+      setSwitchingTenant(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setSwitchLoaderVisible(true)));
+      setTimeout(() => setSwitchLoadStep(1), 480);
+      setTimeout(() => setSwitchLoadStep(2), 960);
+      setTimeout(() => setSwitchLoaderVisible(false), 1440);
+      setTimeout(() => {
+        setActiveBrand(newBrand);
+        setSwitchingTenant(false);
+        setSwitchLoadStep(0);
+        requestAnimationFrame(() => requestAnimationFrame(() => setDashVisible(true)));
+      }, 1800);
+    }, 350);
+  }
   const windowWidth = useWindowWidth();
   const isMobile = windowWidth < 560;
 
@@ -135,9 +161,16 @@ export default function App() {
   }
 
   if (loggedIn) {
+    if (switchingTenant) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100vw', height: '100vh' }}>
+          <LoaderScreen step={switchLoadStep} visible={switchLoaderVisible} steps={SWITCH_STEPS} />
+        </div>
+      );
+    }
     return (
       <div style={{ opacity: dashVisible ? 1 : 0, transition: 'opacity 0.4s ease', width: '100%', height: '100%' }}>
-        <DashboardView />
+        <DashboardView activeBrand={activeBrand} onBrandChange={handleBrandChange} />
       </div>
     );
   }

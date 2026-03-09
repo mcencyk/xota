@@ -368,7 +368,7 @@ const LOAD_STEPS_CAMPAIGN = [
 ];
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function DashboardView() {
+export default function DashboardView({ activeBrand, onBrandChange }) {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [loadingCampaign, setLoadingCampaign] = useState(null);
   const [loadStep, setLoadStep] = useState(0);
@@ -518,7 +518,7 @@ export default function DashboardView() {
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
       {/* ── Sidebar ── */}
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} />
+      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} />
 
       {/* ── Main area ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0, position: 'relative' }}>

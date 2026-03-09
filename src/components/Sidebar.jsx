@@ -8,85 +8,48 @@ const base = import.meta.env.BASE_URL;
 
 const NSS = { vectorEffect: 'non-scaling-stroke' }; // shorthand
 
-// Car + wink face (AfterSales) — viewBox 24×28 (wyższy bo 2 warstwy)
-const AfterSalesIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* Car — skalowany równomiernie do szerokości 22, wyśrodkowany */}
-    <g transform="translate(0,1) scale(0.6471)">
-      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
-    </g>
-    {/* Wink circle — wyśrodkowany u dołu */}
-    <circle {...NSS} cx="12" cy="21" r="6.5" />
-    <line {...NSS} x1="9.2" y1="20" x2="11" y2="20" />
-    <line {...NSS} x1="14.5" y1="19.5" x2="14.5" y2="20.6" />
-    <path {...NSS} d="M9.5 22.8C10.1 24 11 24.6 12 24.6C13 24.6 13.9 24 14.5 22.8" />
+// Grid (Overview)
+const GridIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M1 3C1 1.89543 1.89543 1 3 1H6C7.10457 1 8 1.89543 8 3V6C8 7.10457 7.10457 8 6 8H3C1.89543 8 1 7.10457 1 6V3Z" />
+    <path {...NSS} d="M12 3C12 1.89543 12.8954 1 14 1H17C18.1046 1 19 1.89543 19 3V6C19 7.10457 18.1046 8 17 8H14C12.8954 8 12 7.10457 12 6V3Z" />
+    <path {...NSS} d="M1 14C1 12.8954 1.89543 12 3 12H6C7.10457 12 8 12.8954 8 14V17C8 18.1046 7.10457 19 6 19H3C1.89543 19 1 18.1046 1 17V14Z" />
+    <path {...NSS} d="M12 14C12 12.8954 12.8954 12 14 12H17C18.1046 12 19 12.8954 19 14V17C19 18.1046 18.1046 19 17 19H14C12.8954 19 12 18.1046 12 17V14Z" />
   </svg>
 );
 
-// Car + magnifying glass (Search/Vehicles) — skalowany równomiernie
-const SearchCarIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <g transform="translate(0,0) scale(0.706)">
-      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
-      <path {...NSS} d="M22.9199 20.3008L26 23.381" />
-      <path {...NSS} d="M25.1111 14.9621C25.1111 19.149 21.7284 22.5432 17.5556 22.5432C13.3827 22.5432 10 19.149 10 14.9621C10 10.7752 13.3827 7.38098 17.5556 7.38098C21.7284 7.38098 25.1111 10.7752 25.1111 14.9621Z" />
-    </g>
+// Atom (Criterions)
+const AtomIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M15.4708 15.4708C14.0329 16.9086 12.5047 18.0975 10.9996 18.9996M6.52845 6.52846C7.96629 5.09062 9.49453 3.90172 10.9996 2.99961M10.9996 18.9996C9.49454 18.0975 7.96629 16.9086 6.52846 15.4708C5.09063 14.0329 3.90173 12.5047 2.99962 10.9996M10.9996 18.9996C14.6642 21.1961 18.1915 21.6924 19.9419 19.9419C21.6924 18.1915 21.1961 14.6642 18.9996 10.9996M10.9996 18.9996C7.33501 21.1961 3.80774 21.6924 2.0573 19.9419C0.306863 18.1915 0.803135 14.6642 2.99962 10.9996M18.9996 10.9996C18.0975 9.49453 16.9086 7.96629 15.4708 6.52846C14.0329 5.09062 12.5047 3.90172 10.9996 2.99961M18.9996 10.9996C21.1961 7.335 21.6924 3.80773 19.9419 2.0573C18.1915 0.306864 14.6642 0.803134 10.9996 2.99961M10.9996 2.99961C7.33501 0.803134 3.80774 0.306864 2.05731 2.0573C0.306872 3.80773 0.803141 7.335 2.99962 10.9996M12.1107 10.9996C12.1107 11.6133 11.6133 12.1107 10.9996 12.1107C10.386 12.1107 9.8885 11.6133 9.8885 10.9996C9.8885 10.386 10.386 9.8885 10.9996 9.8885C11.6133 9.8885 12.1107 10.386 12.1107 10.9996Z" />
   </svg>
 );
 
-// Car + settings gear — oba skalowane równomiernie
-const SettingsCarIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* Car — scale(0.6471) żeby zmieścić 34→22 */}
-    <g transform="translate(0,1) scale(0.6471)">
-      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
-    </g>
-    {/* Gears — scale(0.9) żeby zmieścić 18.57→16.7, translate do prawego dolnego rogu */}
-    <g transform="translate(4,9) scale(0.9)">
-      <path {...NSS} d="M11.9868 10C11.9868 11.4912 10.7779 12.7 9.28675 12.7C7.79559 12.7 6.58675 11.4912 6.58675 10C6.58675 8.50883 7.79559 7.3 9.28675 7.3C10.7779 7.3 11.9868 8.50883 11.9868 10Z" />
-      <path {...NSS} d="M11.497 2.23079C11.252 1.49577 10.5642 1 9.78939 1H8.78412C8.00935 1 7.3215 1.49577 7.07649 2.23079L6.73118 3.26672C6.00188 3.54367 5.32924 3.93572 4.73546 4.42067L3.66353 4.20131C2.90449 4.04599 2.13121 4.39379 1.74382 5.06477L1.24119 5.93535C0.8538 6.60633 0.939228 7.44991 1.45327 8.0296L2.17851 8.84746C2.11813 9.22273 2.08675 9.6077 2.08675 10C2.08675 10.3923 2.11813 10.7773 2.17851 11.1525L1.45327 11.9704C0.939228 12.5501 0.8538 13.3937 1.24119 14.0646L1.74382 14.9352C2.13121 15.6062 2.90449 15.954 3.66353 15.7987L4.73546 15.5793C5.32924 16.0643 6.00188 16.4563 6.73118 16.7333L7.07649 17.7692C7.3215 18.5042 8.00935 19 8.78412 19H9.78939C10.5642 19 11.252 18.5042 11.497 17.7692L11.8423 16.7333C12.5716 16.4563 13.2442 16.0643 13.8379 15.5794L14.91 15.7988C15.669 15.9541 16.4423 15.6063 16.8297 14.9354L17.3323 14.0648C17.7197 13.3938 17.6343 12.5502 17.1202 11.9705L16.395 11.1526C16.4554 10.7773 16.4868 10.3923 16.4868 10C16.4868 9.6077 16.4554 9.22273 16.395 8.84746L17.1202 8.0296C17.6343 7.44991 17.7197 6.60633 17.3323 5.93535L16.8297 5.06477C16.4423 4.39379 15.669 4.04599 14.91 4.20131L13.838 4.42067C13.2443 3.93572 12.5716 3.54367 11.8423 3.26672L11.497 2.23079Z" />
-    </g>
+// Clipboard (Reports)
+const ClipboardIcon = () => (
+  <svg width="20" height="24" viewBox="0 0 18 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M4.42857 3.22222C2.53502 3.22222 1 4.71461 1 6.55556V17.6667C1 19.5076 2.53502 21 4.42857 21H13.5714C15.465 21 17 19.5076 17 17.6667V6.55556C17 4.71461 15.465 3.22222 13.5714 3.22222H12.4286M12.4286 3.22222V2.11111C12.4286 1.49746 11.9169 1 11.2857 1H6.71429C6.0831 1 5.57143 1.49746 5.57143 2.11111V4.33333C5.57143 4.94698 6.0831 5.44444 6.71429 5.44444H11.2857C11.9169 5.44444 12.4286 4.94698 12.4286 4.33333V3.22222Z" />
   </svg>
 );
 
-// Bell (pixelpf — skalowany równomiernie do 24×24)
+// Bell (Notifications)
 const BellIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <g transform="translate(2.1,1) scale(1.01)">
-      <path {...NSS} d="M11.8851 21H7.88506M10.8851 1L8.88506 1M3.88506 8V9C3.88506 9.78149 3.88506 10.2343 3.9217 10.5897L2.95273 11.823C1.64857 13.4828 0.996485 14.3127 1.00001 15.0101C1.00308 15.6167 1.28131 16.1892 1.7564 16.5664C2.30259 17 3.35804 17 5.46895 17L14.3012 17C16.4121 17 17.4675 17 18.0137 16.5664C18.4888 16.1892 18.767 15.6167 18.7701 15.0101C18.7736 14.3127 18.1216 13.4828 16.8174 11.823L15.8484 10.5897C15.8851 10.2343 15.8851 9.78148 15.8851 9V8C15.8851 7.07099 15.8851 6.60649 15.8235 6.21783C15.4846 4.07837 13.8067 2.40042 11.6672 2.06156C11.2786 2 10.8141 2 9.88506 2C8.95606 2 8.49155 2 8.10289 2.06156C5.96343 2.40042 4.28548 4.07837 3.94662 6.21783C3.88506 6.60649 3.88506 7.07099 3.88506 8Z" />
-    </g>
+  <svg width="22" height="24" viewBox="0 0 19.7701 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M11.8851 21H7.88506M10.8851 1L8.88506 1M3.88506 8V9C3.88506 9.78149 3.88506 10.2343 3.9217 10.5897L2.95273 11.823C1.64857 13.4828 0.996485 14.3127 1.00001 15.0101C1.00308 15.6167 1.28131 16.1892 1.7564 16.5664C2.30259 17 3.35804 17 5.46895 17L14.3012 17C16.4121 17 17.4675 17 18.0137 16.5664C18.4888 16.1892 18.767 15.6167 18.7701 15.0101C18.7736 14.3127 18.1216 13.4828 16.8174 11.823L15.8484 10.5897C15.8851 10.2343 15.8851 9.78148 15.8851 9V8C15.8851 7.07099 15.8851 6.60649 15.8235 6.21783C15.4846 4.07837 13.8067 2.40042 11.6672 2.06156C11.2786 2 10.8141 2 9.88506 2C8.95606 2 8.49155 2 8.10289 2.06156C5.96343 2.40042 4.28548 4.07837 3.94662 6.21783C3.88506 6.60649 3.88506 7.07099 3.88506 8Z" />
   </svg>
 );
 
-// Calendar with download arrow
-const CalendarDownIcon = () => (
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {/* Body — skalowany równomiernie scale(0.88): 26→22.9 */}
-    <g transform="translate(0.5,0.5) scale(0.88)">
-      <path {...NSS} d="M1 11.6667C1 6.00981 1 4.51472 2.75736 2.75736C4.51472 1 7.34315 1 13 1C18.6569 1 21.4853 1 23.2426 2.75736C25 4.51472 25 6.00981 25 11.6667C25 17.3235 25 20.1519 23.2426 21.9093C21.4853 23.6667 18.6569 23.6667 13 23.6667C7.34315 23.6667 4.51472 23.6667 2.75736 21.9093C1 20.1519 1 17.3235 1 11.6667Z" />
-      <line {...NSS} x1="1" y1="7" x2="25" y2="7" />
-      <line {...NSS} x1="7.5" y1="0" x2="7.5" y2="4" />
-      <line {...NSS} x1="18.5" y1="0" x2="18.5" y2="4" />
-      <line {...NSS} x1="13" y1="10" x2="13" y2="18" />
-      <path {...NSS} d="M10 15.5L13 19L16 15.5" />
-    </g>
+// Calendar (Scheduled Updates)
+const CalendarIcon = () => (
+  <svg width="22" height="24" viewBox="0 0 20 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M1 9.88889V16.5556C1 19.0102 3.01472 21 5.5 21H14.5C16.9853 21 19 19.0102 19 16.5556V9.88889M1 9.88889V7.66667C1 5.21207 3.01472 3.22222 5.5 3.22222H14.5C16.9853 3.22222 19 5.21207 19 7.66667V9.88889M1 9.88889H19M5.5 1V5.44444M14.5 1V5.44444" />
   </svg>
 );
 
-// Chevron right — viewBox dopasowany do proporcji ścieżki
-const ChevronRightIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M2 18L10 10L2 2" />
-  </svg>
-);
-
-// Klasyczne koło zębate (setting-6-gears z Figmy, skalowane do 24×24)
-const GearIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <g transform="translate(2.1,2) scale(1.07)">
-      <path {...NSS} d="M11.9868 10C11.9868 11.4912 10.7779 12.7 9.28675 12.7C7.79559 12.7 6.58675 11.4912 6.58675 10C6.58675 8.50883 7.79559 7.3 9.28675 7.3C10.7779 7.3 11.9868 8.50883 11.9868 10Z" />
-      <path {...NSS} d="M11.497 2.23079C11.252 1.49577 10.5642 1 9.78939 1H8.78412C8.00935 1 7.3215 1.49577 7.07649 2.23079L6.73118 3.26672C6.00188 3.54367 5.32924 3.93572 4.73546 4.42067L3.66353 4.20131C2.90449 4.04599 2.13121 4.39379 1.74382 5.06477L1.24119 5.93535C0.8538 6.60633 0.939228 7.44991 1.45327 8.0296L2.17851 8.84746C2.11813 9.22273 2.08675 9.6077 2.08675 10C2.08675 10.3923 2.11813 10.7773 2.17851 11.1525L1.45327 11.9704C0.939228 12.5501 0.8538 13.3937 1.24119 14.0646L1.74382 14.9352C2.13121 15.6062 2.90449 15.954 3.66353 15.7987L4.73546 15.5793C5.32924 16.0643 6.00188 16.4563 6.73118 16.7333L7.07649 17.7692C7.3215 18.5042 8.00935 19 8.78412 19H9.78939C10.5642 19 11.252 18.5042 11.497 17.7692L11.8423 16.7333C12.5716 16.4563 13.2442 16.0643 13.8379 15.5794L14.91 15.7988C15.669 15.9541 16.4423 15.6063 16.8297 14.9354L17.3323 14.0648C17.7197 13.3938 17.6343 12.5502 17.1202 11.9705L16.395 11.1526C16.4554 10.7773 16.4868 10.3923 16.4868 10C16.4868 9.6077 16.4554 9.22273 16.395 8.84746L17.1202 8.0296C17.6343 7.44991 17.7197 6.60633 17.3323 5.93535L16.8297 5.06477C16.4423 4.39379 15.669 4.04599 14.91 4.20131L13.838 4.42067C13.2443 3.93572 12.5716 3.54367 11.8423 3.26672L11.497 2.23079Z" />
-    </g>
+// Sliders Vertical (System Settings)
+const SlidersIcon = () => (
+  <svg width="20" height="24" viewBox="0 0 18 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path {...NSS} d="M4 11V21M14 11V1M7 4C7 5.65685 5.65685 7 4 7C2.34315 7 1 5.65685 1 4C1 2.34315 2.34315 1 4 1C5.65685 1 7 2.34315 7 4ZM17 18C17 16.3431 15.6569 15 14 15C12.3431 15 11 16.3431 11 18C11 19.6569 12.3431 21 14 21C15.6569 21 17 19.6569 17 18Z" />
   </svg>
 );
 
@@ -94,7 +57,7 @@ const Divider = () => (
   <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0' }} />
 );
 
-function NavIcon({ icon, active, badge, onClick }) {
+function NavIcon({ icon, active, badge, label, onClick }) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -131,6 +94,20 @@ function NavIcon({ icon, active, badge, onClick }) {
             boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)',
           }}>
             {badge}
+          </div>
+        )}
+        {hovered && label && (
+          <div style={{
+            position: 'absolute', left: 'calc(100% + 8px)', top: '50%',
+            padding: '4px 10px', borderRadius: 6,
+            background: '#012d42', border: '1px solid #153f53',
+            fontSize: 11, fontWeight: 600, color: '#80b0c8',
+            fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+            pointerEvents: 'none', zIndex: 200,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
+            animation: 'tooltipFadeInRight 0.12s ease forwards',
+          }}>
+            {label}
           </div>
         )}
       </div>
@@ -244,12 +221,18 @@ function CloseButton({ onClose }) {
 }
 
 // ─── Profile overlay ──────────────────────────────────────────────────────────
-function ProfileOverlay({ onClose }) {
-  const [activeBrand, setActiveBrand] = useState('audi');
+function ProfileOverlay({ onClose, activeBrand: activeBrandProp, onBrandChange }) {
+  const [localBrandId, setLocalBrandId] = useState(activeBrandProp?.id ?? 'audi');
   const [closing, setClosing] = useState(false);
   const brandRows = [BRANDS.slice(0, 2), BRANDS.slice(2, 4), BRANDS.slice(4, 6)];
 
   function handleClose() {
+    setClosing(true);
+  }
+
+  function handleSwitchTenant() {
+    const selected = BRANDS.find(b => b.id === localBrandId);
+    if (selected && onBrandChange) onBrandChange(selected);
     setClosing(true);
   }
 
@@ -371,8 +354,8 @@ function ProfileOverlay({ onClose }) {
                 <ProfileBrandTile
                   key={brand.id}
                   brand={brand}
-                  active={activeBrand === brand.id}
-                  onClick={setActiveBrand}
+                  active={localBrandId === brand.id}
+                  onClick={setLocalBrandId}
                 />
               ))}
             </div>
@@ -382,7 +365,7 @@ function ProfileOverlay({ onClose }) {
 
         {/* Footer buttons */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
-          <ProfileButton disabled={activeBrand === 'audi'} onClick={handleClose}>Switch Tenant</ProfileButton>
+          <ProfileButton disabled={localBrandId === activeBrandProp?.id} onClick={handleSwitchTenant}>Switch Tenant</ProfileButton>
           <ProfileButton primary onClick={handleClose}>Logout</ProfileButton>
         </div>
       </div>
@@ -449,13 +432,14 @@ function AvatarButton({ profileOpen, onClick }) {
       </div>
       {hovered && !profileOpen && (
         <div style={{
-          position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '3px 8px', borderRadius: 4,
+          position: 'absolute', left: 'calc(100% + 8px)', top: '50%',
+          padding: '4px 10px', borderRadius: 6,
           background: '#012d42', border: '1px solid #153f53',
-          fontSize: 10, fontWeight: 600, color: '#80b0c8',
+          fontSize: 11, fontWeight: 600, color: '#80b0c8',
           fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
-          pointerEvents: 'none', zIndex: 110,
+          pointerEvents: 'none', zIndex: 200,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
+          animation: 'tooltipFadeInRight 0.12s ease forwards',
         }}>
           User Profile
         </div>
@@ -464,7 +448,7 @@ function AvatarButton({ profileOpen, onClick }) {
   );
 }
 
-export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
+export default function Sidebar({ activeNav, onNavChange, attentionCount, activeBrand, onBrandChange }) {
   const [profileOpen, setProfileOpen] = useState(false);
 
   return (
@@ -478,18 +462,33 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
         border: '1px solid #004666',
         borderRadius: 24,
         boxShadow: '0px 0px 12px 0px rgba(0,30,45,0.32)',
-        overflow: 'hidden',
+        overflow: 'visible',
       }}>
         {/* Logo + GVU PRO */}
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 8, paddingTop: 24, paddingBottom: 12,
         }}>
-          <img
-            src={base + 'assets/vw.svg'}
-            alt="VW"
-            style={{ width: 32, height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
-          />
+          <div style={{ width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {activeBrand ? (
+              <img
+                src={base + activeBrand.logo}
+                alt={activeBrand.name}
+                style={{
+                  maxWidth: Math.round(activeBrand.logoSize.maxWidth * 0.62),
+                  maxHeight: Math.round(activeBrand.logoSize.maxHeight * 0.62),
+                  width: '100%', height: '100%', objectFit: 'contain',
+                  filter: 'brightness(0) invert(1)',
+                }}
+              />
+            ) : (
+              <img
+                src={base + 'assets/vw.svg'}
+                alt="VW"
+                style={{ width: 32, height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+              />
+            )}
+          </div>
           <div style={{ textAlign: 'center', fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>
             <div style={{ fontSize: 13, letterSpacing: 0.3, color: '#ffffff', lineHeight: '16px' }}>GVU</div>
             <div style={{ fontSize: 8, letterSpacing: 2.5, color: '#ccdfe9', opacity: 0.5, lineHeight: '12px' }}>PRO</div>
@@ -498,22 +497,21 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
 
         <Divider />
 
-        <NavIcon icon={<AfterSalesIcon />} active={activeNav === 'aftersales'} badge={attentionCount} onClick={() => onNavChange('aftersales')} />
-        <NavIcon icon={<SearchCarIcon />} active={activeNav === 'people'} onClick={() => onNavChange('people')} />
-        <NavIcon icon={<SettingsCarIcon />} active={activeNav === 'settings'} onClick={() => onNavChange('settings')} />
+        <NavIcon icon={<GridIcon />} active={activeNav === 'aftersales'} badge={attentionCount} label="Overview" onClick={() => onNavChange('aftersales')} />
+        <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} label="Test Updates" onClick={() => onNavChange('people')} />
+        <NavIcon icon={<ClipboardIcon />} active={activeNav === 'settings'} label="Reports" onClick={() => onNavChange('settings')} />
 
         <Divider />
 
-        <NavIcon icon={<BellIcon />} active={activeNav === 'bell'} badge={1} onClick={() => onNavChange('bell')} />
-        <NavIcon icon={<CalendarDownIcon />} active={activeNav === 'calendar'} onClick={() => onNavChange('calendar')} />
+        <NavIcon icon={<BellIcon />} active={activeNav === 'bell'} badge={1} label="Notifications" onClick={() => onNavChange('bell')} />
+        <NavIcon icon={<CalendarIcon />} active={activeNav === 'calendar'} label="Scheduled Updates" onClick={() => onNavChange('calendar')} />
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
         <Divider />
 
-        <NavIcon icon={<ChevronRightIcon />} onClick={() => {}} />
-        <NavIcon icon={<GearIcon />} onClick={() => {}} />
+        <NavIcon icon={<SlidersIcon />} label="System Settings" onClick={() => {}} />
 
         {/* Avatar */}
         <div style={{
@@ -524,7 +522,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
         </div>
       </div>
 
-      {profileOpen && <ProfileOverlay onClose={() => setProfileOpen(false)} />}
+      {profileOpen && <ProfileOverlay onClose={() => setProfileOpen(false)} activeBrand={activeBrand} onBrandChange={onBrandChange} />}
     </>
   );
 }

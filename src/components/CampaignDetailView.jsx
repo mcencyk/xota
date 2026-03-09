@@ -78,7 +78,7 @@ function StatCard({ value, unit, trend, label, sub }) {
 }
 
 // ─── Progress stat card ───────────────────────────────────────────────────────
-function ProgressCard({ value, trend, label, barColor, barWidth }) {
+function ProgressCard({ value, trend, label, barColor, barWidth, empty }) {
   return (
     <div style={{
       flex: 1, minWidth: 0,
@@ -88,10 +88,10 @@ function ProgressCard({ value, trend, label, barColor, barWidth }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-          <span style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+          <span style={{ fontSize: 22, fontWeight: 700, color: empty ? 'rgba(128,176,200,0.3)' : '#ffffff', fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
             {value}
           </span>
-          <Trend dir={trend} />
+          {!empty && trend && <Trend dir={trend} />}
         </div>
         <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, textTransform: 'uppercase' }}>
           {label}
@@ -99,7 +99,7 @@ function ProgressCard({ value, trend, label, barColor, barWidth }) {
       </div>
       {/* Progress bar */}
       <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
-        <div style={{ height: '100%', borderRadius: 2, width: barWidth, background: barColor, transition: 'width 0.6s ease' }} />
+        {!empty && <div style={{ height: '100%', borderRadius: 2, width: barWidth, background: barColor, transition: 'width 0.6s ease' }} />}
       </div>
     </div>
   );
@@ -209,7 +209,7 @@ function CloseDetailBtn({ onClick }) {
   );
 }
 
-function VehicleBar({ totalVehicles }) {
+function VehicleBar({ totalVehicles, disabled }) {
   const [hoveredSeg, setHoveredSeg] = useState(null);
   const [selectedSeg, setSelectedSeg] = useState(null);
   const [closingDetail, setClosingDetail] = useState(false);
@@ -238,6 +238,17 @@ function VehicleBar({ totalVehicles }) {
   const activeSeg = selectedSeg !== null ? VEHICLE_SEGMENTS[selectedSeg] : null;
   const subSegs = selectedSeg !== null ? SUB_SEGMENTS[selectedSeg] : [];
   const segCount = activeSeg ? Math.round(total * activeSeg.pct / 100) : 0;
+
+  if (disabled) {
+    return (
+      <div style={{
+        height: 28, borderRadius: 6,
+        background: 'rgba(40,119,156,0.22)',
+        border: '1px solid rgba(40,119,156,0.18)',
+        animation: 'barEnter 0.55s cubic-bezier(0.22,1,0.36,1) both',
+      }} />
+    );
+  }
 
   return (
     <>
@@ -738,6 +749,7 @@ export default function CampaignDetailView({ campaign, onBack }) {
   }
 
   const status = campaign.statuses[0];
+  const isCreated = status === 'CREATED';
   const stats = getCampaignStats(campaign);
 
   return (
@@ -792,6 +804,17 @@ export default function CampaignDetailView({ campaign, onBack }) {
 
           {/* Status */}
           <StatusBadge status={status} />
+          {isCreated && (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '3px 10px', borderRadius: 99,
+              background: 'rgba(40,140,80,0.15)', border: '1px solid rgba(40,140,80,0.4)',
+              fontSize: 10, fontWeight: 700, color: '#38b060',
+              fontFamily: "'Inter', sans-serif", letterSpacing: 0.5, whiteSpace: 'nowrap',
+            }}>
+              CAMPAIGN APPROVAL
+            </span>
+          )}
         </div>
 
         {/* ── Filter bar ── */}
@@ -805,36 +828,57 @@ export default function CampaignDetailView({ campaign, onBack }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
           {/* Row 1: 6 small cards */}
           <div style={{ display: 'flex', gap: 10 }}>
-            <StatCard value={stats.days} unit="days" label={`Since start (${stats.startDate})`} />
+            {isCreated
+              ? <StatCard value={`-${stats.days}`} unit="days" label={`To start (${stats.startDate})`} />
+              : <StatCard value={stats.days} unit="days" label={`Since start (${stats.startDate})`} />
+            }
             <StatCard value={stats.models} label="Models" />
             <StatCard value={stats.countries} label="Countries" />
-            <StatCard value={stats.updateSpeed} unit="sec" trend={stats.updateTrend} label="Average update speed" />
-            <StatCard value={stats.dlSpeed} unit="sec" trend={stats.dlTrend} label="Average download speed" />
-            <StatCard value={stats.dailyCars} unit="cars" trend={stats.carsTrend} label="Updated vehicles each day" />
+            <StatCard
+              value={isCreated ? '–' : stats.updateSpeed}
+              unit={isCreated ? undefined : 'sec'}
+              trend={isCreated ? undefined : stats.updateTrend}
+              label="Average update speed"
+            />
+            <StatCard
+              value={isCreated ? '–' : stats.dlSpeed}
+              unit={isCreated ? undefined : 'sec'}
+              trend={isCreated ? undefined : stats.dlTrend}
+              label="Average download speed"
+            />
+            <StatCard
+              value={isCreated ? '–' : stats.dailyCars}
+              unit={isCreated ? undefined : 'cars'}
+              trend={isCreated ? undefined : stats.carsTrend}
+              label="Updated vehicles each day"
+            />
           </div>
 
           {/* Row 2: 3 progress cards */}
           <div style={{ display: 'flex', gap: 10 }}>
             <ProgressCard
-              value={`${stats.launchRate}%`}
-              trend={stats.launchRate === 100 ? 'neutral' : 'down'}
+              value={isCreated ? '–' : `${stats.launchRate}%`}
+              trend={isCreated ? undefined : (stats.launchRate === 100 ? 'neutral' : 'down')}
               label="Launch rate"
               barColor="linear-gradient(90deg, #28779c 0%, #28a0c8 100%)"
               barWidth={`${stats.launchRate}%`}
+              empty={isCreated}
             />
             <ProgressCard
-              value={`${stats.successRate}%`}
-              trend={stats.successTrend}
+              value={isCreated ? '–' : `${stats.successRate}%`}
+              trend={isCreated ? undefined : stats.successTrend}
               label="Success rate"
               barColor="linear-gradient(90deg, #28779c 0%, #28a0c8 100%)"
               barWidth={`${stats.successRate}%`}
+              empty={isCreated}
             />
             <ProgressCard
-              value={`${stats.failureRate}%`}
-              trend={stats.failTrend}
+              value={isCreated ? '–' : `${stats.failureRate}%`}
+              trend={isCreated ? undefined : stats.failTrend}
               label="Failure rate"
               barColor="linear-gradient(90deg, #8b2020 0%, #cc3333 100%)"
               barWidth={`${stats.failureRate}%`}
+              empty={isCreated}
             />
           </div>
         </div>
@@ -855,7 +899,7 @@ export default function CampaignDetailView({ campaign, onBack }) {
             <ShowVinsButton />
           </div>
 
-          <VehicleBar totalVehicles={campaign.vehicles} />
+          <VehicleBar totalVehicles={campaign.vehicles} disabled={isCreated} />
         </div>
 
         {/* ── Bottom action bar (floating) ── */}
@@ -887,11 +931,21 @@ export default function CampaignDetailView({ campaign, onBack }) {
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
             </svg>
           </IconBtn>
-          <IconBtn tooltip="Abort campaign" danger>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </IconBtn>
+          {isCreated
+            ? (
+              <IconBtn tooltip="Approve campaign">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38b060" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </IconBtn>
+            ) : (
+              <IconBtn tooltip="Abort campaign" danger>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </IconBtn>
+            )
+          }
         </div>
 
         {configureOpen && <ConfigureOverlay onClose={() => setConfigureOpen(false)} />}
