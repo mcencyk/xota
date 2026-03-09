@@ -357,7 +357,15 @@ export default function DashboardView() {
   const [hoveredCol, setHoveredCol] = useState(null);
   const [hoveredPage, setHoveredPage] = useState(null);
 
-  const tabFiltered = CAMPAIGNS.filter(TAB_FILTER[activeTopTab] ?? TAB_FILTER.all);
+  const searchLower = searchValue.trim().toLowerCase();
+
+  const tabFiltered = CAMPAIGNS
+    .filter(TAB_FILTER[activeTopTab] ?? TAB_FILTER.all)
+    .filter(r => {
+      if (!searchLower) return true;
+      return [r.name, r.code, r.crit, r.spec, r.measure, r.type, r.date, r.statuses[0], r.vehicles]
+        .some(v => v.toLowerCase().includes(searchLower));
+    });
 
   const sortedCampaigns = [...tabFiltered].sort((a, b) => {
     const va = String(a[sort.key] ?? '');
@@ -373,7 +381,7 @@ export default function DashboardView() {
     );
   }
 
-  const totalCount = TAB_TOTAL[activeTopTab] ?? 372;
+  const totalCount = searchLower ? tabFiltered.length : (TAB_TOTAL[activeTopTab] ?? 372);
   const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
   const displayEnd = Math.min(PER_PAGE, totalCount);
   const pages = buildPages(totalPages);
@@ -499,7 +507,7 @@ export default function DashboardView() {
             <input
               value={searchValue}
               onChange={e => setSearchValue(e.target.value)}
-              placeholder="Search table..."
+              placeholder="Search campaigns..."
               style={{
                 background: 'transparent', border: 'none', outline: 'none',
                 fontSize: 12, fontWeight: 500, color: '#ffffff',
@@ -509,6 +517,43 @@ export default function DashboardView() {
               }}
               className="dashboard-search"
             />
+            {searchValue && (
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <button
+                  onClick={() => setSearchValue('')}
+                  style={{
+                    background: 'none', border: 'none', padding: '2px 2px 0',
+                    cursor: 'pointer', color: 'rgba(128,176,200,0.5)',
+                    display: 'flex', alignItems: 'center',
+                    lineHeight: 1, transition: 'color 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = 'rgba(128,176,200,1)';
+                    e.currentTarget.parentNode.querySelector('.search-clear-tip').style.opacity = '1';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = 'rgba(128,176,200,0.5)';
+                    e.currentTarget.parentNode.querySelector('.search-clear-tip').style.opacity = '0';
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+                <div className="search-clear-tip" style={{
+                  position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%',
+                  transform: 'translateX(-50%)',
+                  padding: '3px 7px', borderRadius: 4,
+                  background: '#012d42', border: '1px solid #153f53',
+                  fontSize: 10, fontWeight: 600, color: '#80b0c8',
+                  fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+                  pointerEvents: 'none', opacity: 0, transition: 'opacity 0.15s',
+                  zIndex: 10,
+                }}>
+                  Clear
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -566,6 +611,23 @@ export default function DashboardView() {
 
           {/* Table rows */}
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 32 }}>
+            {sortedCampaigns.length === 0 && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                height: '100%', gap: 10, padding: '48px 0',
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  <line x1="8" y1="11" x2="14" y2="11"/>
+                </svg>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>
+                  No results found
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>
+                  Try adjusting your search or filters
+                </div>
+              </div>
+            )}
             {sortedCampaigns.map((row, i) => (
               <div
                 key={row.id}

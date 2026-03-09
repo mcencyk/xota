@@ -150,57 +150,49 @@ export default function App() {
   if (isMobile) {
     return (
       <div style={{
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 28,
-        paddingTop: 48,
-        paddingBottom: 32,
-        opacity: loginVisible ? 1 : 0,
-        transition: 'opacity 0.35s ease',
+        width: '100%', height: '100vh',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '32px 24px', gap: 32, textAlign: 'center',
       }}>
-
-        {/* Title */}
-        <div style={{ textAlign: 'center', fontFamily: "'Montserrat', sans-serif", fontWeight: 700, padding: '0 16px' }}>
-          <div style={{ fontSize: 34, letterSpacing: 0.853, color: '#ffffff', lineHeight: 1.3 }}>
-            GVU
-          </div>
-          <div style={{ fontSize: 20, letterSpacing: 6, color: '#ccdfe9', opacity: 0.5, lineHeight: 1.3, paddingLeft: 8 }}>
-            PRO
-          </div>
+        <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>
+          <div style={{ fontSize: 28, letterSpacing: 0.5, color: '#ffffff' }}>GVU</div>
+          <div style={{ fontSize: 14, letterSpacing: 5, color: '#ccdfe9', opacity: 0.5, marginTop: 2 }}>PRO</div>
         </div>
 
-        {/* Form */}
+        <div style={{
+          width: 56, height: 56, borderRadius: 16,
+          background: 'rgba(0,70,102,0.3)', border: '1px solid rgba(21,63,83,0.8)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.6)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-          {/* Inputs stacked */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '0 16px' }}>
-            <FloatingInput label="User" type="text" />
-            <FloatingInput label="Password" type="password" />
+          <div style={{
+            fontSize: 17, fontWeight: 700, color: '#ffffff',
+            fontFamily: "'Inter', sans-serif", letterSpacing: 0.2,
+          }}>
+            Mobile not supported
           </div>
-
-          {/* Brand grid — 2 columns, full width */}
-          <div style={{ padding: '0 16px' }}>
-            <BrandGrid selected={activeBrand.id} onSelect={handleBrandSelect} cols={2} cardHeight={90} logoScale={0.9} />
+          <div style={{
+            fontSize: 13, fontWeight: 400, color: 'rgba(128,176,200,0.65)',
+            fontFamily: "'Inter', sans-serif", lineHeight: 1.6,
+            maxWidth: 280,
+          }}>
+            GVU Pro is designed for desktop use. Due to the complexity and density of the interface, mobile devices are not supported.
           </div>
-
-          {/* Variant dropdown */}
-          <div style={{ padding: '0 16px' }}>
-            <VariantSelect
-              brandName={activeBrand.name}
-              variants={activeBrand.variants}
-              selected={selectedVariant}
-              onSelect={setSelectedVariant}
-            />
+          <div style={{
+            fontSize: 12, fontWeight: 500, color: 'rgba(128,176,200,0.4)',
+            fontFamily: "'Inter', sans-serif", letterSpacing: 0.3,
+            marginTop: 4,
+          }}>
+            Please open this application on a desktop or laptop computer.
           </div>
         </div>
-
-        {/* Footer */}
-        <div style={{ display: 'flex', gap: 8, padding: '0 16px' }}>
-          <AppButton fullWidth>Help</AppButton>
-          <AppButton primary fullWidth onClick={handleLogin}>Login</AppButton>
-        </div>
-
       </div>
     );
   }

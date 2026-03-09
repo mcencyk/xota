@@ -2,66 +2,90 @@ import { useState } from 'react';
 
 const base = import.meta.env.BASE_URL;
 
-// Inline SVG icons (Lucide / mynaui style, stroke-based)
-const CarIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M7 17H5a2 2 0 0 1-2-2v-4l2-5h10l2 5v4a2 2 0 0 1-2 2h-2"/>
-    <circle cx="7.5" cy="17" r="1.5"/>
-    <circle cx="16.5" cy="17" r="1.5"/>
-    <path d="M5 10h14"/>
+// ─── Icons from Figma — wszystkie w viewBox 24×24, vectorEffect="non-scaling-stroke"
+// stroke="currentColor" dziedziczy kolor z NavIcon (active/hover/normal)
+
+const NSS = { vectorEffect: 'non-scaling-stroke' }; // shorthand
+
+// Car + wink face (AfterSales) — viewBox 24×28 (wyższy bo 2 warstwy)
+const AfterSalesIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 28" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {/* Car — skalowany równomiernie do szerokości 22, wyśrodkowany */}
+    <g transform="translate(0,1) scale(0.6471)">
+      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
+    </g>
+    {/* Wink circle — wyśrodkowany u dołu */}
+    <circle {...NSS} cx="12" cy="21" r="6.5" />
+    <line {...NSS} x1="9.2" y1="20" x2="11" y2="20" />
+    <line {...NSS} x1="14.5" y1="19.5" x2="14.5" y2="20.6" />
+    <path {...NSS} d="M9.5 22.8C10.1 24 11 24.6 12 24.6C13 24.6 13.9 24 14.5 22.8" />
   </svg>
 );
 
-const PeopleIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="9" cy="7" r="3"/>
-    <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    <path d="M21 21v-2a4 4 0 0 0-3-3.85"/>
+// Car + magnifying glass (Search/Vehicles) — skalowany równomiernie
+const SearchCarIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <g transform="translate(0,0) scale(0.706)">
+      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
+      <path {...NSS} d="M22.9199 20.3008L26 23.381" />
+      <path {...NSS} d="M25.1111 14.9621C25.1111 19.149 21.7284 22.5432 17.5556 22.5432C13.3827 22.5432 10 19.149 10 14.9621C10 10.7752 13.3827 7.38098 17.5556 7.38098C21.7284 7.38098 25.1111 10.7752 25.1111 14.9621Z" />
+    </g>
   </svg>
 );
 
-const GearIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3"/>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+// Car + settings gear — oba skalowane równomiernie
+const SettingsCarIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {/* Car — scale(0.6471) żeby zmieścić 34→22 */}
+    <g transform="translate(0,1) scale(0.6471)">
+      <path {...NSS} d="M5.36761 14.7143H3.91174C2.31028 14.7143 1 13.3429 1 11.6667V8.72571C1 7.70476 1.48044 6.76 2.29572 6.19619L5.36761 4.04762L7.42039 1.89905C7.97362 1.32 8.70156 1 9.47317 1H20.1592C20.9309 1 21.6734 1.32 22.212 1.89905L27.1765 7.09524L30.8016 8.04C32.0974 8.37524 33 9.59429 33 10.9962V13.1905C33 14.0286 32.3449 14.7143 31.5441 14.7143H30.0883" />
+    </g>
+    {/* Gears — scale(0.9) żeby zmieścić 18.57→16.7, translate do prawego dolnego rogu */}
+    <g transform="translate(4,9) scale(0.9)">
+      <path {...NSS} d="M11.9868 10C11.9868 11.4912 10.7779 12.7 9.28675 12.7C7.79559 12.7 6.58675 11.4912 6.58675 10C6.58675 8.50883 7.79559 7.3 9.28675 7.3C10.7779 7.3 11.9868 8.50883 11.9868 10Z" />
+      <path {...NSS} d="M11.497 2.23079C11.252 1.49577 10.5642 1 9.78939 1H8.78412C8.00935 1 7.3215 1.49577 7.07649 2.23079L6.73118 3.26672C6.00188 3.54367 5.32924 3.93572 4.73546 4.42067L3.66353 4.20131C2.90449 4.04599 2.13121 4.39379 1.74382 5.06477L1.24119 5.93535C0.8538 6.60633 0.939228 7.44991 1.45327 8.0296L2.17851 8.84746C2.11813 9.22273 2.08675 9.6077 2.08675 10C2.08675 10.3923 2.11813 10.7773 2.17851 11.1525L1.45327 11.9704C0.939228 12.5501 0.8538 13.3937 1.24119 14.0646L1.74382 14.9352C2.13121 15.6062 2.90449 15.954 3.66353 15.7987L4.73546 15.5793C5.32924 16.0643 6.00188 16.4563 6.73118 16.7333L7.07649 17.7692C7.3215 18.5042 8.00935 19 8.78412 19H9.78939C10.5642 19 11.252 18.5042 11.497 17.7692L11.8423 16.7333C12.5716 16.4563 13.2442 16.0643 13.8379 15.5794L14.91 15.7988C15.669 15.9541 16.4423 15.6063 16.8297 14.9354L17.3323 14.0648C17.7197 13.3938 17.6343 12.5502 17.1202 11.9705L16.395 11.1526C16.4554 10.7773 16.4868 10.3923 16.4868 10C16.4868 9.6077 16.4554 9.22273 16.395 8.84746L17.1202 8.0296C17.6343 7.44991 17.7197 6.60633 17.3323 5.93535L16.8297 5.06477C16.4423 4.39379 15.669 4.04599 14.91 4.20131L13.838 4.42067C13.2443 3.93572 12.5716 3.54367 11.8423 3.26672L11.497 2.23079Z" />
+    </g>
   </svg>
 );
 
+// Bell (pixelpf — skalowany równomiernie do 24×24)
 const BellIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <g transform="translate(2.1,1) scale(1.01)">
+      <path {...NSS} d="M11.8851 21H7.88506M10.8851 1L8.88506 1M3.88506 8V9C3.88506 9.78149 3.88506 10.2343 3.9217 10.5897L2.95273 11.823C1.64857 13.4828 0.996485 14.3127 1.00001 15.0101C1.00308 15.6167 1.28131 16.1892 1.7564 16.5664C2.30259 17 3.35804 17 5.46895 17L14.3012 17C16.4121 17 17.4675 17 18.0137 16.5664C18.4888 16.1892 18.767 15.6167 18.7701 15.0101C18.7736 14.3127 18.1216 13.4828 16.8174 11.823L15.8484 10.5897C15.8851 10.2343 15.8851 9.78148 15.8851 9V8C15.8851 7.07099 15.8851 6.60649 15.8235 6.21783C15.4846 4.07837 13.8067 2.40042 11.6672 2.06156C11.2786 2 10.8141 2 9.88506 2C8.95606 2 8.49155 2 8.10289 2.06156C5.96343 2.40042 4.28548 4.07837 3.94662 6.21783C3.88506 6.60649 3.88506 7.07099 3.88506 8Z" />
+    </g>
   </svg>
 );
 
-const CalendarIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/>
-    <line x1="3" y1="10" x2="21" y2="10"/>
-    <polyline points="8 14 10 16 16 11"/>
+// Calendar with download arrow
+const CalendarDownIcon = () => (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {/* Body — skalowany równomiernie scale(0.88): 26→22.9 */}
+    <g transform="translate(0.5,0.5) scale(0.88)">
+      <path {...NSS} d="M1 11.6667C1 6.00981 1 4.51472 2.75736 2.75736C4.51472 1 7.34315 1 13 1C18.6569 1 21.4853 1 23.2426 2.75736C25 4.51472 25 6.00981 25 11.6667C25 17.3235 25 20.1519 23.2426 21.9093C21.4853 23.6667 18.6569 23.6667 13 23.6667C7.34315 23.6667 4.51472 23.6667 2.75736 21.9093C1 20.1519 1 17.3235 1 11.6667Z" />
+      <line {...NSS} x1="1" y1="7" x2="25" y2="7" />
+      <line {...NSS} x1="7.5" y1="0" x2="7.5" y2="4" />
+      <line {...NSS} x1="18.5" y1="0" x2="18.5" y2="4" />
+      <line {...NSS} x1="13" y1="10" x2="13" y2="18" />
+      <path {...NSS} d="M10 15.5L13 19L16 15.5" />
+    </g>
   </svg>
 );
 
+// Chevron right — viewBox dopasowany do proporcji ścieżki
 const ChevronRightIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6"/>
+  <svg width="22" height="22" viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 18L10 10L2 2" />
   </svg>
 );
 
-const SlidersIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="4" y1="6" x2="14" y2="6"/>
-    <line x1="14" y1="6" x2="14" y2="2"/>
-    <line x1="14" y1="6" x2="14" y2="10"/>
-    <line x1="4" y1="12" x2="4" y2="8"/>
-    <line x1="4" y1="12" x2="4" y2="16"/>
-    <line x1="4" y1="12" x2="20" y2="12"/>
-    <line x1="20" y1="18" x2="20" y2="14"/>
-    <line x1="20" y1="18" x2="20" y2="22"/>
-    <line x1="10" y1="18" x2="20" y2="18"/>
+// Klasyczne koło zębate (setting-6-gears z Figmy, skalowane do 24×24)
+const GearIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <g transform="translate(2.1,2) scale(1.07)">
+      <path {...NSS} d="M11.9868 10C11.9868 11.4912 10.7779 12.7 9.28675 12.7C7.79559 12.7 6.58675 11.4912 6.58675 10C6.58675 8.50883 7.79559 7.3 9.28675 7.3C10.7779 7.3 11.9868 8.50883 11.9868 10Z" />
+      <path {...NSS} d="M11.497 2.23079C11.252 1.49577 10.5642 1 9.78939 1H8.78412C8.00935 1 7.3215 1.49577 7.07649 2.23079L6.73118 3.26672C6.00188 3.54367 5.32924 3.93572 4.73546 4.42067L3.66353 4.20131C2.90449 4.04599 2.13121 4.39379 1.74382 5.06477L1.24119 5.93535C0.8538 6.60633 0.939228 7.44991 1.45327 8.0296L2.17851 8.84746C2.11813 9.22273 2.08675 9.6077 2.08675 10C2.08675 10.3923 2.11813 10.7773 2.17851 11.1525L1.45327 11.9704C0.939228 12.5501 0.8538 13.3937 1.24119 14.0646L1.74382 14.9352C2.13121 15.6062 2.90449 15.954 3.66353 15.7987L4.73546 15.5793C5.32924 16.0643 6.00188 16.4563 6.73118 16.7333L7.07649 17.7692C7.3215 18.5042 8.00935 19 8.78412 19H9.78939C10.5642 19 11.252 18.5042 11.497 17.7692L11.8423 16.7333C12.5716 16.4563 13.2442 16.0643 13.8379 15.5794L14.91 15.7988C15.669 15.9541 16.4423 15.6063 16.8297 14.9354L17.3323 14.0648C17.7197 13.3938 17.6343 12.5502 17.1202 11.9705L16.395 11.1526C16.4554 10.7773 16.4868 10.3923 16.4868 10C16.4868 9.6077 16.4554 9.22273 16.395 8.84746L17.1202 8.0296C17.6343 7.44991 17.7197 6.60633 17.3323 5.93535L16.8297 5.06477C16.4423 4.39379 15.669 4.04599 14.91 4.20131L13.838 4.42067C13.2443 3.93572 12.5716 3.54367 11.8423 3.26672L11.497 2.23079Z" />
+    </g>
   </svg>
 );
 
@@ -144,14 +168,14 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
 
       <Divider />
 
-      <NavIcon icon={<CarIcon />} active={activeNav === 'aftersales'} badge={attentionCount} onClick={() => onNavChange('aftersales')} />
-      <NavIcon icon={<PeopleIcon />} active={activeNav === 'people'} onClick={() => onNavChange('people')} />
-      <NavIcon icon={<GearIcon />} active={activeNav === 'settings'} onClick={() => onNavChange('settings')} />
+      <NavIcon icon={<AfterSalesIcon />} active={activeNav === 'aftersales'} badge={attentionCount} onClick={() => onNavChange('aftersales')} />
+      <NavIcon icon={<SearchCarIcon />} active={activeNav === 'people'} onClick={() => onNavChange('people')} />
+      <NavIcon icon={<SettingsCarIcon />} active={activeNav === 'settings'} onClick={() => onNavChange('settings')} />
 
       <Divider />
 
       <NavIcon icon={<BellIcon />} active={activeNav === 'bell'} badge={1} onClick={() => onNavChange('bell')} />
-      <NavIcon icon={<CalendarIcon />} active={activeNav === 'calendar'} onClick={() => onNavChange('calendar')} />
+      <NavIcon icon={<CalendarDownIcon />} active={activeNav === 'calendar'} onClick={() => onNavChange('calendar')} />
 
       {/* Spacer */}
       <div style={{ flex: 1 }} />
@@ -159,7 +183,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount }) {
       <Divider />
 
       <NavIcon icon={<ChevronRightIcon />} onClick={() => {}} />
-      <NavIcon icon={<SlidersIcon />} onClick={() => {}} />
+      <NavIcon icon={<GearIcon />} onClick={() => {}} />
 
       {/* Avatar */}
       <div style={{
