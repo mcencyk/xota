@@ -74,10 +74,10 @@ const TABS_BOTTOM = [
 const COLUMNS = [
   { key: 'name',     label: 'CAMPAIGN NAME',       flex: 3   },
   { key: 'vehicles', label: 'VEHICLES',             flex: 1   },
-  { key: 'code',     label: 'ACTION CODE',          flex: 1.2 },
+  { key: 'code',     label: 'SYSTEM CODE',          flex: 1.2 },
   { key: 'crit',     label: 'CRITERION',            flex: 1   },
-  { key: 'spec',     label: 'UPDATE SPECIFICATION', flex: 3   },
-  { key: 'measure',  label: 'CHANGE MEASURE ID',    flex: 2.5 },
+  { key: 'spec',     label: 'SPECIFICATION MODEL',  flex: 3   },
+  { key: 'measure',  label: 'INTERNAL ID',          flex: 2.5 },
   { key: 'type',     label: 'UPDATE TYPE',          flex: 1.2 },
   { key: 'date',     label: 'START DATE',           flex: 1.4 },
   { key: 'statuses', label: 'STATUS',               flex: 2   },
@@ -286,9 +286,9 @@ function FilterPanel({ filters, onChange, activeFilterCount }) {
         </div>
       </div>
 
-      {/* Action Code */}
+      {/* System Code */}
       <div>
-        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter',sans-serif", marginBottom: 6, textTransform: 'uppercase' }}>Action Code</div>
+        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter',sans-serif", marginBottom: 6, textTransform: 'uppercase' }}>System Code</div>
         <div style={{ display: 'flex', gap: 4 }}>
           {FILTER_CODES.map(c => {
             const active = filters.codes.includes(c);
@@ -605,42 +605,41 @@ export default function DashboardView() {
             </div>
           </div>
 
-          {/* Table header */}
-          <div style={{
-            display: 'flex', alignItems: 'center',
-            height: 40, flexShrink: 0,
-            borderBottom: '1px solid #153f53',
-            background: 'rgba(0,30,45,0.3)',
-          }}>
-            {COLUMNS.map(col => {
-              const isActive = sort.key === col.key;
-              const isHovered = hoveredCol === col.key;
-              return (
-                <div
-                  key={col.key}
-                  onClick={() => handleColSort(col.key)}
-                  onMouseEnter={() => setHoveredCol(col.key)}
-                  onMouseLeave={() => setHoveredCol(null)}
-                  style={{
-                    ...headerCell, flex: col.flex, minWidth: 0,
-                    cursor: 'pointer',
-                    display: 'flex', alignItems: 'center',
-                    color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                    userSelect: 'none',
-                    transition: 'color 0.15s',
-                  }}
-                >
-                  {col.label}
-                  {(isActive || isHovered) && (
-                    <SortArrow active={isActive} dir={sort.dir} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Table rows */}
+          {/* Table rows + sticky header inside same scroll container */}
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 32 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              height: 40, flexShrink: 0,
+              borderBottom: '1px solid #153f53',
+              background: 'rgb(2, 52, 78)',
+              position: 'sticky', top: 0, zIndex: 1,
+            }}>
+              {COLUMNS.map(col => {
+                const isActive = sort.key === col.key;
+                const isHovered = hoveredCol === col.key;
+                return (
+                  <div
+                    key={col.key}
+                    onClick={() => handleColSort(col.key)}
+                    onMouseEnter={() => setHoveredCol(col.key)}
+                    onMouseLeave={() => setHoveredCol(null)}
+                    style={{
+                      ...headerCell, flex: col.flex, minWidth: 0,
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center',
+                      color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
+                      userSelect: 'none',
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    {col.label}
+                    {(isActive || isHovered) && (
+                      <SortArrow active={isActive} dir={sort.dir} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
             {sortedCampaigns.length === 0 && (
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
