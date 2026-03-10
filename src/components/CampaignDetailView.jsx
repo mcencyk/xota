@@ -340,6 +340,9 @@ function FilterDropdown({ allLabel, options, value, onChange, triggerWidth }) {
 }
 
 // ─── Vehicle distribution bar ─────────────────────────────────────────────────
+// Campaigns in this set get 100% launch rate (no errors)
+const PERFECT_LAUNCH_IDS = new Set([1, 8, 9, 19, 22]);
+
 const VEHICLE_SEGMENTS = [
   { color: '#e03070', label: 'ERRORS',       pct: 17 },
   { color: '#e08020', label: 'DOWNLOADING',  pct: 30 },
@@ -347,6 +350,43 @@ const VEHICLE_SEGMENTS = [
   { color: '#38b060', label: 'INSTALLING',   pct: 12 },
   { color: '#28a0c8', label: 'CHECKING',     pct: 7  },
   { color: '#8060c8', label: 'POSTPONED',    pct: 7  },
+];
+
+// Segments without ERRORS (for 100% launch rate campaigns) — redistributed proportionally
+const VEHICLE_SEGMENTS_NO_ERRORS = [
+  { color: '#e08020', label: 'DOWNLOADING',  pct: 37 },
+  { color: '#c8a020', label: 'INITIALIZING', pct: 32 },
+  { color: '#38b060', label: 'INSTALLING',   pct: 14 },
+  { color: '#28a0c8', label: 'CHECKING',     pct: 9  },
+  { color: '#8060c8', label: 'POSTPONED',    pct: 8  },
+];
+
+// FAILED interval — ERRORS dominant (>70%)
+const VEHICLE_SEGMENTS_FAILED = [
+  { color: '#e03070', label: 'ERRORS',       pct: 76 },
+  { color: '#e08020', label: 'DOWNLOADING',  pct: 10 },
+  { color: '#c8a020', label: 'INITIALIZING', pct: 7  },
+  { color: '#38b060', label: 'INSTALLING',   pct: 4  },
+  { color: '#28a0c8', label: 'CHECKING',     pct: 2  },
+  { color: '#8060c8', label: 'POSTPONED',    pct: 1  },
+];
+
+// 5 distinct variants for interval bars — with ERRORS
+const INTERVAL_SEGMENT_VARIANTS = [
+  [ { color: '#e03070', label: 'ERRORS', pct: 22 }, { color: '#e08020', label: 'DOWNLOADING', pct: 48 }, { color: '#c8a020', label: 'INITIALIZING', pct: 16 }, { color: '#38b060', label: 'INSTALLING', pct: 7 }, { color: '#28a0c8', label: 'CHECKING', pct: 4 }, { color: '#8060c8', label: 'POSTPONED', pct: 3 } ],
+  [ { color: '#e03070', label: 'ERRORS', pct: 10 }, { color: '#e08020', label: 'DOWNLOADING', pct: 20 }, { color: '#c8a020', label: 'INITIALIZING', pct: 44 }, { color: '#38b060', label: 'INSTALLING', pct: 14 }, { color: '#28a0c8', label: 'CHECKING', pct: 7 }, { color: '#8060c8', label: 'POSTPONED', pct: 5 } ],
+  [ { color: '#e03070', label: 'ERRORS', pct: 8  }, { color: '#e08020', label: 'DOWNLOADING', pct: 12 }, { color: '#c8a020', label: 'INITIALIZING', pct: 18 }, { color: '#38b060', label: 'INSTALLING', pct: 42 }, { color: '#28a0c8', label: 'CHECKING', pct: 13 }, { color: '#8060c8', label: 'POSTPONED', pct: 7 } ],
+  [ { color: '#e03070', label: 'ERRORS', pct: 35 }, { color: '#e08020', label: 'DOWNLOADING', pct: 28 }, { color: '#c8a020', label: 'INITIALIZING', pct: 18 }, { color: '#38b060', label: 'INSTALLING', pct: 10 }, { color: '#28a0c8', label: 'CHECKING', pct: 5 }, { color: '#8060c8', label: 'POSTPONED', pct: 4 } ],
+  [ { color: '#e03070', label: 'ERRORS', pct: 6  }, { color: '#e08020', label: 'DOWNLOADING', pct: 10 }, { color: '#c8a020', label: 'INITIALIZING', pct: 15 }, { color: '#38b060', label: 'INSTALLING', pct: 35 }, { color: '#28a0c8', label: 'CHECKING', pct: 22 }, { color: '#8060c8', label: 'POSTPONED', pct: 12 } ],
+];
+
+// Same 5 variants — no ERRORS (for 100% launch-rate campaigns)
+const INTERVAL_SEGMENT_VARIANTS_NO_ERRORS = [
+  [ { color: '#e08020', label: 'DOWNLOADING', pct: 62 }, { color: '#c8a020', label: 'INITIALIZING', pct: 20 }, { color: '#38b060', label: 'INSTALLING', pct: 9 }, { color: '#28a0c8', label: 'CHECKING', pct: 5 }, { color: '#8060c8', label: 'POSTPONED', pct: 4 } ],
+  [ { color: '#e08020', label: 'DOWNLOADING', pct: 22 }, { color: '#c8a020', label: 'INITIALIZING', pct: 49 }, { color: '#38b060', label: 'INSTALLING', pct: 16 }, { color: '#28a0c8', label: 'CHECKING', pct: 8 }, { color: '#8060c8', label: 'POSTPONED', pct: 5 } ],
+  [ { color: '#e08020', label: 'DOWNLOADING', pct: 13 }, { color: '#c8a020', label: 'INITIALIZING', pct: 20 }, { color: '#38b060', label: 'INSTALLING', pct: 45 }, { color: '#28a0c8', label: 'CHECKING', pct: 14 }, { color: '#8060c8', label: 'POSTPONED', pct: 8 } ],
+  [ { color: '#e08020', label: 'DOWNLOADING', pct: 43 }, { color: '#c8a020', label: 'INITIALIZING', pct: 28 }, { color: '#38b060', label: 'INSTALLING', pct: 15 }, { color: '#28a0c8', label: 'CHECKING', pct: 8 }, { color: '#8060c8', label: 'POSTPONED', pct: 6 } ],
+  [ { color: '#e08020', label: 'DOWNLOADING', pct: 11 }, { color: '#c8a020', label: 'INITIALIZING', pct: 16 }, { color: '#38b060', label: 'INSTALLING', pct: 37 }, { color: '#28a0c8', label: 'CHECKING', pct: 23 }, { color: '#8060c8', label: 'POSTPONED', pct: 13 } ],
 ];
 
 // Distribute `total` vehicles across segments using largest-remainder method
@@ -376,22 +416,23 @@ const SUB_SEGMENTS = [
   [{ label: 'Scheduled',    pct: 48, color: '#8060c8' }, { label: 'Queued',      pct: 52, color: '#604098' }],
 ];
 
-function ShowVinsButton({ onClick }) {
+function ShowVinsButton({ onClick, disabled }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
+      onClick={disabled ? undefined : onClick}
+      onMouseEnter={() => !disabled && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
         padding: '6px 14px', borderRadius: 8,
-        background: hovered ? '#005a80' : '#004666',
+        background: disabled ? 'rgba(0,70,102,0.25)' : hovered ? '#005a80' : '#004666',
         border: 'none',
-        color: '#ccdfe9',
+        color: disabled ? 'rgba(128,176,200,0.3)' : '#ccdfe9',
         fontSize: 10, fontWeight: 700,
-        fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, cursor: 'pointer',
-        transition: 'background 0.15s, box-shadow 0.15s',
-        boxShadow: hovered ? '0px 2px 8px 0px rgba(0,37,55,0.48)' : '0px 1px 4px 0px rgba(0,37,55,0.32)',
+        fontFamily: "'Inter', sans-serif", letterSpacing: 0.8,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        transition: 'background 0.15s, box-shadow 0.15s, color 0.15s',
+        boxShadow: disabled ? 'none' : hovered ? '0px 2px 8px 0px rgba(0,37,55,0.48)' : '0px 1px 4px 0px rgba(0,37,55,0.32)',
       }}
     >
       SHOW VINS
@@ -534,9 +575,10 @@ const VIN_COLUMNS = [
   { key: 'productId', label: 'PRODUCT ID' },
   { key: 'country',   label: 'COUNTRY' },
   { key: 'interval',  label: 'INTERVAL' },
+  { key: 'status',    label: 'STATUS' },
 ];
 
-function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveInterval, onClose, onCopy }) {
+function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveInterval, segmentFilter, vehicleSegments, onClose, onCopy }) {
   const [closing, setClosing] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [search, setSearch] = useState('');
@@ -561,14 +603,42 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
     (effectiveInterval === null || r.interval === effectiveInterval)
   );
 
-  // Build VIN list (capped at VIN_CAP for performance)
-  const totalCount = filteredDist.reduce((s, r) => s + r.count, 0);
+  // Build VIN list — when segmentFilter is set, take only that slice
+  const fullCount = filteredDist.reduce((s, r) => s + r.count, 0);
+  const segStart  = segmentFilter ? segmentFilter.offset : 0;
+  const segEnd    = segmentFilter ? segmentFilter.offset + segmentFilter.count : Infinity;
+  const totalCount = segmentFilter ? segmentFilter.count : fullCount;
+
+  // Precompute cumulative segment boundaries for status annotation
+  const showStatus = !segmentFilter && vehicleSegments;
+  const segCounts  = showStatus ? distributeVehicles(fullCount, vehicleSegments) : null;
+  const segBounds  = segCounts ? segCounts.reduce((acc, c, i) => {
+    acc.push({ start: i === 0 ? 0 : acc[i - 1].end, end: (i === 0 ? 0 : acc[i - 1].end) + c, seg: vehicleSegments[i] });
+    return acc;
+  }, []) : null;
+  function getSegmentForIdx(idx) {
+    if (!segBounds) return null;
+    for (const b of segBounds) { if (idx >= b.start && idx < b.end) return b.seg; }
+    return null;
+  }
+
   const vinList = [];
   let globalIdx = 0;
   outer: for (const rec of filteredDist) {
     for (let v = 0; v < rec.count; v++) {
-      if (globalIdx >= VIN_CAP) break outer;
-      vinList.push({ vin: generateVin(campaign.id, globalIdx), productId: rec.model, country: rec.country, interval: rec.interval });
+      if (globalIdx >= segEnd) break outer;
+      if (globalIdx >= segStart) {
+        if (vinList.length >= VIN_CAP) break outer;
+        const seg = getSegmentForIdx(globalIdx - segStart);
+        vinList.push({
+          vin: generateVin(campaign.id, globalIdx),
+          productId: rec.model,
+          country: rec.country,
+          interval: rec.interval,
+          statusLabel: seg ? seg.label : null,
+          statusColor: seg ? seg.color : null,
+        });
+      }
       globalIdx++;
     }
   }
@@ -609,10 +679,23 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
       >
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 20, fontWeight: 600, color: '#ffffff', fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.4 }}>
               Vehicle VINs
             </span>
+            {segmentFilter && (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '3px 10px', borderRadius: 99,
+                background: `${segmentFilter.color}22`,
+                border: `1px solid ${segmentFilter.color}66`,
+                fontSize: 10, fontWeight: 700, color: segmentFilter.color,
+                fontFamily: "'Inter', sans-serif", letterSpacing: 0.5,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: segmentFilter.color, flexShrink: 0 }} />
+                {segmentFilter.label}
+              </span>
+            )}
             <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif" }}>
               {totalCount > VIN_CAP
                 ? `showing ${VIN_CAP.toLocaleString()} of ${totalCount.toLocaleString()}`
@@ -658,13 +741,13 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
         {/* Table header */}
         <div style={{
           flexShrink: 0,
-          display: 'grid', gridTemplateColumns: '2.2fr 1.2fr 1.2fr 1fr',
+          display: 'grid', gridTemplateColumns: showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr',
           padding: '10px 12px',
           background: 'rgb(1,41,64)',
           borderRadius: 10,
           scrollbarGutter: 'stable',
         }}>
-          {VIN_COLUMNS.map(col => {
+          {(showStatus ? VIN_COLUMNS : VIN_COLUMNS.slice(0, 4)).map(col => {
             const isActive = sort.key === col.key;
             const isHov = hoveredCol === col.key;
             return (
@@ -709,7 +792,7 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
               <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(128,176,200,0.4)', fontFamily: "'Inter', sans-serif" }}>No VINs match your search</span>
             </div>
           ) : (
-            displayed.map((item, i) => <VinRow key={item.vin} item={item} i={i} onCopy={onCopy} />)
+            displayed.map((item, i) => <VinRow key={item.vin} item={item} i={i} onCopy={onCopy} showStatus={showStatus} />)
           )}
         </div>
       </div>
@@ -717,7 +800,7 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
   );
 }
 
-function VinRow({ item, i, onCopy }) {
+function VinRow({ item, i, onCopy, showStatus }) {
   const [hovered, setHovered] = useState(false);
   const [copyHovered, setCopyHovered] = useState(false);
 
@@ -731,7 +814,7 @@ function VinRow({ item, i, onCopy }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setCopyHovered(false); }}
       style={{
-        display: 'grid', gridTemplateColumns: '2.2fr 1.2fr 1.2fr 1fr',
+        display: 'grid', gridTemplateColumns: showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr',
         alignItems: 'center',
         padding: '9px 12px', borderRadius: 8,
         background: hovered ? 'rgba(0,70,102,0.22)' : i % 2 === 0 ? 'transparent' : 'rgba(0,40,60,0.18)',
@@ -768,6 +851,16 @@ function VinRow({ item, i, onCopy }) {
       <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.productId}</span>
       <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.country}</span>
       <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.interval}</span>
+      {showStatus && (
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          fontSize: 9, fontWeight: 700, color: item.statusColor ?? 'rgba(128,176,200,0.6)',
+          fontFamily: "'Inter', sans-serif", letterSpacing: 0.5,
+        }}>
+          {item.statusColor && <span style={{ width: 5, height: 5, borderRadius: '50%', background: item.statusColor, flexShrink: 0 }} />}
+          {item.statusLabel ?? '—'}
+        </span>
+      )}
     </div>
   );
 }
@@ -809,7 +902,7 @@ function CloseDetailBtn({ onClick }) {
   );
 }
 
-function VehicleBar({ totalVehicles, disabled, onShowVins }) {
+function VehicleBar({ totalVehicles, disabled, onShowVins, noErrors, segmentsOverride, onSegmentChange }) {
   const [hoveredSeg, setHoveredSeg] = useState(null);
   const [selectedSeg, setSelectedSeg] = useState(null);
   const [closingDetail, setClosingDetail] = useState(false);
@@ -817,12 +910,15 @@ function VehicleBar({ totalVehicles, disabled, onShowVins }) {
     ? totalVehicles
     : parseInt(String(totalVehicles).replace(/[\s\u00a0,]/g, ''), 10) || 0;
 
-  // Close detail when total changes (filter change)
+  const segments = segmentsOverride ?? (noErrors ? VEHICLE_SEGMENTS_NO_ERRORS : VEHICLE_SEGMENTS);
+
+  // Close detail when total or error state changes
   useEffect(() => {
     setSelectedSeg(null);
     setClosingDetail(false);
     setHoveredSeg(null);
-  }, [total]);
+    onSegmentChange?.(false);
+  }, [total, noErrors]);
 
   function handleSegClick(segIdx) {
     if (selectedSeg === segIdx) {
@@ -830,25 +926,29 @@ function VehicleBar({ totalVehicles, disabled, onShowVins }) {
     } else {
       setClosingDetail(false);
       setSelectedSeg(segIdx);
+      onSegmentChange?.(true);
     }
   }
 
   function handleCloseDetail() { setClosingDetail(true); }
 
   function handleDetailAnimEnd() {
-    if (closingDetail) { setSelectedSeg(null); setClosingDetail(false); }
+    if (closingDetail) { setSelectedSeg(null); setClosingDetail(false); onSegmentChange?.(false); }
   }
 
   // Compute exact vehicle counts per segment (always sums to total)
-  const counts = distributeVehicles(total, VEHICLE_SEGMENTS);
+  const counts = distributeVehicles(total, segments);
   // Only render segments that have at least 1 vehicle, preserving original index for sub-segment data
-  const visibleSegs = VEHICLE_SEGMENTS
+  const visibleSegs = segments
     .map((seg, i) => ({ ...seg, origIdx: i, count: counts[i] }))
     .filter(s => s.count > 0);
 
-  const activeSeg = selectedSeg !== null ? VEHICLE_SEGMENTS[selectedSeg] : null;
-  const subSegs = selectedSeg !== null ? SUB_SEGMENTS[selectedSeg] : [];
+  // For sub-segment lookup: when noErrors, ERRORS slot (index 0) is skipped, so offset by 1
+  const subSegOffset = noErrors ? 1 : 0;
+  const activeSeg = selectedSeg !== null ? segments[selectedSeg] : null;
+  const subSegs = selectedSeg !== null ? (SUB_SEGMENTS[selectedSeg + subSegOffset] ?? []) : [];
   const segCount = activeSeg ? counts[selectedSeg] : 0;
+  const segOffset = selectedSeg !== null ? counts.slice(0, selectedSeg).reduce((s, c) => s + c, 0) : 0;
 
   if (disabled) {
     return (
@@ -974,7 +1074,7 @@ function VehicleBar({ totalVehicles, disabled, onShowVins }) {
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <ShowVinsButton onClick={onShowVins} />
+              <ShowVinsButton onClick={() => onShowVins({ label: activeSeg.label, color: activeSeg.color, offset: segOffset, count: segCount })} />
               <CloseDetailBtn onClick={handleCloseDetail} />
             </div>
           </div>
@@ -1103,39 +1203,39 @@ function IconBtn({ children, tooltip, danger, approve, onClick }) {
 // ─── Configure overlay ────────────────────────────────────────────────────────
 const CONFIGURE_PARAMS = {
   PRIMARY: [
-    { label: 'Flash Duration HV',        value: '102', unit: 'sec.' },
-    { label: 'Flash Duration LV',        value: '102', unit: 'sec.' },
-    { label: 'Flash Duration HMI',       value: '4',   unit: 'min.' },
-    { label: 'Enabled Power Grid',       value: '2',   unit: ''     },
-    { label: 'Current Consumption HV',   value: '10',  unit: 'amp.' },
-    { label: 'Current Consumption LV',   value: '10',  unit: 'amp.' },
-    { label: 'Block Flash Attempts',     value: '3',   unit: ''     },
-    { label: 'Flash Process Repeat',     value: '2',   unit: ''     },
-    { label: 'Repeat',                   value: '6',   unit: ''     },
-    { label: 'Retry',                    value: '3',   unit: ''     },
-    { label: 'Max Retry Number',         value: '5',   unit: ''     },
-    { label: 'Time Delay General',       value: '5',   unit: 'sec.' },
-    { label: 'Time Delay Start 1',       value: '600', unit: 'sec.' },
-    { label: 'Time Delay Start 2',       value: '120', unit: 'sec.' },
-    { label: 'Time Delay Wait For Sleep',value: '30',  unit: 'sec.' },
-    { label: 'Log Level',                value: '7',   unit: ''     },
-    { label: 'Installation Failure Action', value: 'Continue', unit: '' },
+    { label: 'Flash Duration HV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for high-voltage ECU firmware flashing' },
+    { label: 'Flash Duration LV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for low-voltage ECU firmware flashing' },
+    { label: 'Flash Duration HMI',          value: '4',   unit: 'min.', tooltip: 'Max time allowed for HMI display firmware flashing' },
+    { label: 'Enabled Power Grid',          value: '2',   unit: '',     tooltip: 'Number of active power domains required during flashing' },
+    { label: 'Current Consumption HV',      value: '10',  unit: 'amp.', tooltip: 'Max current draw from the high-voltage system during update' },
+    { label: 'Current Consumption LV',      value: '10',  unit: 'amp.', tooltip: 'Max current draw from the low-voltage system during update' },
+    { label: 'Block Flash Attempts',        value: '3',   unit: '',     tooltip: 'Consecutive failures before flashing is permanently blocked' },
+    { label: 'Flash Process Repeat',        value: '2',   unit: '',     tooltip: 'Times the flash process is re-run on partial completion' },
+    { label: 'Repeat',                      value: '6',   unit: '',     tooltip: 'Total number of full update cycle repetitions allowed' },
+    { label: 'Retry',                       value: '3',   unit: '',     tooltip: 'Retry attempts after a single failed operation' },
+    { label: 'Max Retry Number',            value: '5',   unit: '',     tooltip: 'Hard cap on total retries across all operations' },
+    { label: 'Time Delay General',          value: '5',   unit: 'sec.', tooltip: 'Pause between sequential update operations' },
+    { label: 'Time Delay Start 1',          value: '600', unit: 'sec.', tooltip: 'Initial delay before the first update step begins' },
+    { label: 'Time Delay Start 2',          value: '120', unit: 'sec.', tooltip: 'Secondary delay applied before critical update operations' },
+    { label: 'Time Delay Wait For Sleep',   value: '30',  unit: 'sec.', tooltip: 'Wait time before verifying vehicle is in sleep mode' },
+    { label: 'Log Level',                   value: '7',   unit: '',     tooltip: 'Diagnostic log verbosity — higher value means more detail' },
+    { label: 'Installation Failure Action', value: 'Continue', unit: '', tooltip: 'Behavior when an ECU installation fails mid-campaign' },
   ],
   SECONDARY: [
-    { label: 'Fallback Timeout',         value: '60',  unit: 'sec.' },
-    { label: 'Retry Interval',           value: '15',  unit: 'sec.' },
-    { label: 'Max Parallel Sessions',    value: '8',   unit: ''     },
-    { label: 'Session Timeout',          value: '300', unit: 'sec.' },
-    { label: 'Heartbeat Interval',       value: '30',  unit: 'sec.' },
-    { label: 'Diagnostic Level',         value: '2',   unit: ''     },
-    { label: 'Log Retention',            value: '14',  unit: 'days' },
-    { label: 'Error Threshold',          value: '5',   unit: '%'    },
-    { label: 'Priority Level',           value: '3',   unit: ''     },
-    { label: 'Notification Mode',        value: 'Push', unit: ''    },
+    { label: 'Fallback Timeout',            value: '60',  unit: 'sec.', tooltip: 'Time before reverting to previous software version on failure' },
+    { label: 'Retry Interval',              value: '15',  unit: 'sec.', tooltip: 'Wait time between consecutive retry attempts' },
+    { label: 'Max Parallel Sessions',       value: '8',   unit: '',     tooltip: 'Maximum number of vehicles updating simultaneously' },
+    { label: 'Session Timeout',             value: '300', unit: 'sec.', tooltip: 'Maximum duration of a single vehicle update session' },
+    { label: 'Heartbeat Interval',          value: '30',  unit: 'sec.', tooltip: 'Frequency of status pings to verify an active connection' },
+    { label: 'Diagnostic Level',            value: '2',   unit: '',     tooltip: 'Depth of on-board diagnostics collected during update' },
+    { label: 'Log Retention',               value: '14',  unit: 'days', tooltip: 'Days update logs are stored before automatic deletion' },
+    { label: 'Error Threshold',             value: '5',   unit: '%',    tooltip: 'Max error rate before the campaign is automatically paused' },
+    { label: 'Priority Level',              value: '3',   unit: '',     tooltip: 'Scheduling priority relative to other active campaigns' },
+    { label: 'Notification Mode',           value: 'Push', unit: '',    tooltip: 'Method used to deliver campaign status notifications' },
   ],
 };
 
-function ParamField({ label, value, unit }) {
+function ParamField({ label, value, unit, tooltip, isRightCol }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -1164,15 +1264,19 @@ function ParamField({ label, value, unit }) {
           </span>
         )}
       </div>
-      {hovered && (
+      {hovered && tooltip && (
         <div style={{
-          position: 'absolute', bottom: 'calc(100% + 7px)', left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute',
+          bottom: 'calc(100% + 7px)',
+          ...(isRightCol ? { right: 0 } : { left: 0 }),
+          width: 220,
           background: '#012d42', border: '1px solid #153f53', borderRadius: 8,
-          padding: '6px 10px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none',
+          padding: '6px 10px', whiteSpace: 'normal', wordBreak: 'break-word',
+          zIndex: 110, pointerEvents: 'none',
           fontSize: 10, fontWeight: 500, color: 'rgba(204,223,233,0.85)', fontFamily: "'Inter', sans-serif",
-          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          lineHeight: 1.5, boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
         }}>
-          Tooltip that describes this parameter
+          {tooltip}
         </div>
       )}
     </div>
@@ -1226,14 +1330,13 @@ function ConfigureOverlay({ onClose }) {
               onMouseEnter={() => setCloseHovered(true)}
               onMouseLeave={() => setCloseHovered(false)}
               style={{
-                width: 28, height: 28, borderRadius: 8, border: '1px solid #1e5068',
-                background: closeHovered ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.06)',
-                color: closeHovered ? '#ccdfe9' : 'rgba(128,176,200,0.7)',
+                width: 24, height: 24, background: 'none', border: 'none',
+                color: closeHovered ? 'rgba(204,223,233,0.9)' : 'rgba(128,176,200,0.5)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: 0, transition: 'all 0.15s',
+                padding: 0, transition: 'color 0.15s',
               }}
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
             </button>
@@ -1277,17 +1380,267 @@ function ConfigureOverlay({ onClose }) {
         </div>
 
         {/* Parameter grid (scrollable) */}
-        <div style={{ overflowY: 'auto', flexShrink: 1, minHeight: 0 }}>
+        <div style={{ overflowY: 'auto', flexShrink: 1, minHeight: 0, paddingTop: 44, marginTop: -44 }}>
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
           }}>
             {params.map((p, i) => (
-              <ParamField key={i} label={p.label} value={p.value} unit={p.unit} />
+              <ParamField key={i} label={p.label} value={p.value} unit={p.unit} tooltip={p.tooltip} isRightCol={i % 2 === 1} />
             ))}
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+const LOAD_STEPS_REFRESH = [
+  'Fetching campaign data',
+  'Loading vehicle statistics',
+  'Refreshing campaign view',
+];
+
+// ─── Interval list item ───────────────────────────────────────────────────────
+const INTERVAL_STATUSES = ['RUNNING', 'CALCULATED', 'COMPLETED', 'FAILED'];
+function getIntervalMeta(campaignId, intervalIdx) {
+  const status = INTERVAL_STATUSES[(campaignId * 7 + intervalIdx * 13) % INTERVAL_STATUSES.length];
+  let successRate;
+  if (status === 'FAILED') {
+    successRate = 5 + ((campaignId * 11 + intervalIdx * 7) % 14); // 5–18%
+  } else if (status === 'CALCULATED') {
+    successRate = 0;
+  } else {
+    successRate = 48 + ((campaignId * 37 + intervalIdx * 17) % 50); // 48–97% — wide variation
+  }
+  return { status, successRate };
+}
+
+function IntervalListItem({ name, count, maxCount, active, onClick, status }) {
+  const [hovered, setHovered] = useState(false);
+  const barPct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
+        background: active ? 'rgba(0,70,102,0.5)' : '#012d42',
+        border: active ? '1px solid #28779c' : hovered ? '1px solid #28779c' : '1px solid #004666',
+        boxShadow: active ? '0px 0px 12px 0px rgba(0,30,45,0.32)' : 'none',
+        transition: 'all 0.15s', display: 'flex', flexDirection: 'column', gap: 7,
+        userSelect: 'none',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#ffffff' : '#ccdfe9', fontFamily: "'Inter', sans-serif" }}>
+          {name}
+        </span>
+        <StatusBadge status={status} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: active ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)', fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums' }}>
+          {count.toLocaleString()} vehicles
+        </span>
+      </div>
+      <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
+        <div style={{ height: '100%', borderRadius: 2, width: `${barPct}%`, background: 'linear-gradient(90deg, #28779c 0%, #28a0c8 100%)', transition: 'width 0.6s ease' }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Breakdown row ────────────────────────────────────────────────────────────
+function BreakdownRow({ name, count, max }) {
+  const barPct = max > 0 ? (count / max) * 100 : 0;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 500, color: '#ccdfe9', fontFamily: "'Inter', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {name}
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(128,176,200,0.75)', fontFamily: "'Inter', sans-serif", fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+          {count.toLocaleString()}
+        </span>
+      </div>
+      <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)' }}>
+        <div style={{ height: '100%', borderRadius: 2, width: `${barPct}%`, background: 'linear-gradient(90deg, #28779c 0%, #28a0c8 100%)', transition: 'width 0.6s ease' }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Breakdown panel ──────────────────────────────────────────────────────────
+function BreakdownPanel({ title, items }) {
+  const max = items.length > 0 ? items[0].count : 0;
+  return (
+    <div style={{
+      flex: 1, minWidth: 0,
+      background: 'rgba(1,45,66,0.55)', border: '1px solid #153f53',
+      borderRadius: 16, padding: '14px 16px',
+      display: 'flex', flexDirection: 'column', gap: 12,
+      overflowY: 'auto',
+    }}>
+      <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, textTransform: 'uppercase', flexShrink: 0 }}>
+        {title}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map(item => (
+          <BreakdownRow key={item.name} name={item.name} count={item.count} max={max} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Interval detail ──────────────────────────────────────────────────────────
+function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignId, intervalIdx }) {
+  const [segmentActive, setSegmentActive] = useState(false);
+  const intervalDist = dist.filter(r => r.interval === name);
+  const totalCount = intervalDist.reduce((s, r) => s + r.count, 0);
+  const animTotal = useCountUp(totalCount);
+
+  const { status, successRate } = getIntervalMeta(campaignId, intervalIdx);
+  const intervalNum = name.replace('Interval ', '');
+
+  const isIntervalCalculated = status === 'CALCULATED';
+  const isIntervalFailed = status === 'FAILED';
+  const isIntervalDisabled = isCreated || isIntervalCalculated;
+
+  // Pick segment variant for this interval
+  const variantIdx = (campaignId * 3 + intervalIdx * 7) % INTERVAL_SEGMENT_VARIANTS.length;
+  let intervalSegments;
+  if (isIntervalFailed) {
+    intervalSegments = VEHICLE_SEGMENTS_FAILED;
+  } else if (!isIntervalDisabled) {
+    intervalSegments = noErrors
+      ? INTERVAL_SEGMENT_VARIANTS_NO_ERRORS[variantIdx]
+      : INTERVAL_SEGMENT_VARIANTS[variantIdx];
+  }
+
+  // Country breakdown
+  const countryMap = {};
+  intervalDist.forEach(r => { countryMap[r.country] = (countryMap[r.country] || 0) + r.count; });
+  const countryItems = Object.entries(countryMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+  // Model breakdown
+  const modelMap = {};
+  intervalDist.forEach(r => { modelMap[r.model] = (modelMap[r.model] || 0) + r.count; });
+  const modelItems = Object.entries(modelMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+  const countriesCount = countryItems.length;
+  const modelsCount = modelItems.length;
+
+  return (
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 60, overflowY: 'auto' }}>
+      {/* Row 1: Interval number / Countries / Models */}
+      <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+        <StatCard value={intervalNum} label="Interval" />
+        <StatCard value={countriesCount} label="Countries" />
+        <StatCard value={modelsCount} label="Models" />
+      </div>
+      {/* Row 2: Success rate + Failure rate */}
+      <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+        <ProgressCard
+          value={`${successRate}%`}
+          trend={successRate > 88 ? 'up' : 'down'}
+          label="Success rate"
+          barColor="linear-gradient(90deg, #28779c 0%, #28a0c8 100%)"
+          barWidth={`${successRate}%`}
+          empty={isIntervalDisabled}
+        />
+        <ProgressCard
+          value={`${100 - successRate}%`}
+          trend={(100 - successRate) > 12 ? 'down' : 'up'}
+          label="Failure rate"
+          barColor="linear-gradient(90deg, #8b2020 0%, #cc3333 100%)"
+          barWidth={`${100 - successRate}%`}
+          empty={isIntervalDisabled}
+        />
+      </div>
+
+      {/* Vehicle distribution bar */}
+      <div style={{
+        flexShrink: 0,
+        background: 'rgba(1,45,66,0.55)', border: '1px solid #153f53',
+        borderRadius: 16, padding: '14px 20px',
+        display: 'flex', flexDirection: 'column', gap: 12,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <span style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', fontFamily: "'Inter', sans-serif" }}>
+              {animTotal.toLocaleString('en-US').replace(/,/g, '\u00a0')}
+            </span>
+            <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 2 }}>Vehicles</div>
+          </div>
+          <ShowVinsButton onClick={() => onShowVins(name, null, intervalSegments ?? null)} disabled={segmentActive} />
+        </div>
+        <VehicleBar totalVehicles={totalCount} disabled={isIntervalDisabled} onShowVins={seg => onShowVins(name, seg, null)} noErrors={noErrors && !isIntervalFailed} segmentsOverride={intervalSegments} onSegmentChange={setSegmentActive} />
+      </div>
+
+      {/* Breakdown panels */}
+      <div style={{ flex: 1, display: 'flex', gap: 12, minHeight: 0 }}>
+        <BreakdownPanel title="BY COUNTRY" items={countryItems} />
+        <BreakdownPanel title="BY MODEL" items={modelItems} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Intervals view ───────────────────────────────────────────────────────────
+function IntervalsView({ dist, campaignFilters, isCreated, noErrors, onShowVins, campaignId }) {
+  const intervals = campaignFilters.intervals;
+  const [selectedInterval, setSelectedInterval] = useState(intervals[0] ?? null);
+
+  // Auto-select first interval when intervals list changes
+  useEffect(() => {
+    if (intervals.length > 0) setSelectedInterval(intervals[0]);
+  }, [intervals.join(',')]);
+
+  // Count per interval
+  const intervalCounts = intervals.map((iv, i) => ({
+    name: iv,
+    idx: i,
+    count: dist.filter(r => r.interval === iv).reduce((s, r) => s + r.count, 0),
+    status: getIntervalMeta(campaignId, i).status,
+  }));
+  const maxCount = Math.max(...intervalCounts.map(i => i.count), 1);
+  const selIdx = intervals.indexOf(selectedInterval);
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 16 }}>
+      {/* Left panel: interval list */}
+      <div style={{
+        width: 220, flexShrink: 0,
+        display: 'flex', flexDirection: 'column', gap: 6,
+        overflowY: 'auto', paddingBottom: 60,
+      }}>
+        {intervalCounts.map(({ name, count, status }) => (
+          <IntervalListItem
+            key={name}
+            name={name}
+            count={count}
+            maxCount={maxCount}
+            active={selectedInterval === name}
+            onClick={() => setSelectedInterval(name)}
+            status={status}
+          />
+        ))}
+      </div>
+
+      {/* Right panel: interval detail */}
+      {selectedInterval !== null && (
+        <IntervalDetail
+          name={selectedInterval}
+          dist={dist}
+          isCreated={isCreated}
+          noErrors={noErrors}
+          onShowVins={onShowVins}
+          campaignId={campaignId}
+          intervalIdx={selIdx}
+        />
+      )}
+    </div>
   );
 }
 
@@ -1302,8 +1655,9 @@ function getCampaignStats(campaign) {
   const updateSpeed  = r(280, 920, 4);
   const dlSpeed      = r(350, 1400, 5);
   const dailyCars    = r(40,  680, 6);
-  const launchRate   = r(78,  100, 7);
-  const successRate  = r(72,  98,  8);
+  const isCampaignFailed = campaign.statuses[0] === 'FAILED';
+  const launchRate   = isCampaignFailed ? r(55, 72, 7) : PERFECT_LAUNCH_IDS.has(s) ? 100 : r(78, 99, 7);
+  const successRate  = isCampaignFailed ? 5 + ((s * 11 + 8 * 7) % 14) : r(72, 98, 8);
   const failureRate  = 100 - successRate;
 
   const updateTrend  = updateSpeed > 600 ? 'up' : 'down';
@@ -1598,12 +1952,6 @@ function AbortModal({ onClose }) {
   );
 }
 
-const LOAD_STEPS_REFRESH = [
-  'Fetching campaign data',
-  'Loading vehicle statistics',
-  'Preparing campaign view',
-];
-
 function BackButton({ onClick }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -1614,11 +1962,10 @@ function BackButton({ onClick }) {
         onMouseLeave={() => setHovered(false)}
         style={{
           width: 32, height: 32, borderRadius: 8,
-          border: hovered ? '1px solid #28779c' : '1px solid #153f53',
-          background: 'rgba(1,45,66,0.55)',
-          color: hovered ? '#ccdfe9' : 'rgba(128,176,200,0.8)',
+          border: 'none', background: 'none',
+          color: hovered ? '#ccdfe9' : 'rgba(128,176,200,0.5)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'border-color 0.15s, color 0.15s',
+          transition: 'color 0.15s',
         }}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1658,6 +2005,10 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
   const [selectedModel, setSelectedModel] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(null);
   const [vinsOpen, setVinsOpen] = useState(false);
+  const [vinsIntervalOverride, setVinsIntervalOverride] = useState(null);
+  const [vinsSegmentFilter, setVinsSegmentFilter] = useState(null);
+  const [vinsVehicleSegments, setVinsVehicleSegments] = useState(null);
+  const [campaignSegmentActive, setCampaignSegmentActive] = useState(false);
   const [copyToast, setCopyToast] = useState(null); // vin string or null
 
   const brandId = activeBrand?.id ?? 'vw';
@@ -1713,6 +2064,13 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
     onBack();
   }
 
+  function handleShowVinsForInterval(intervalName, segFilter = null, vehicleSegs = null) {
+    setVinsIntervalOverride(intervalName);
+    setVinsSegmentFilter(segFilter);
+    setVinsVehicleSegments(segFilter ? null : vehicleSegs);
+    setVinsOpen(true);
+  }
+
   function handleRefresh() {
     setRefreshing(true);
     setLoadStep(0);
@@ -1722,6 +2080,8 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
     setTimeout(() => setLoaderVisible(false), 1300);
     setTimeout(() => { setRefreshing(false); setLoaderVisible(false); setLoadStep(0); }, 1600);
   }
+
+  const animVehicles = useCountUp(filtVehiclesNum);
 
   if (refreshing) {
     return (
@@ -1769,16 +2129,17 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
   }
 
   const status = campaign.statuses[0];
-  const isCreated = status === 'CREATED';
-  const isActive = status === 'RUNNING' || status === 'CALCULATED';
+  const isCreated = status === 'CREATED' || status === 'CALCULATED';
+  const isActive = status === 'RUNNING';
+  const isFailed = status === 'FAILED';
   const stats = getCampaignStats(campaign);
 
   // ── Filtered stats ───────────────────────────────────────────────────────────
-  const animVehicles = useCountUp(filtVehiclesNum);
   const filtVehiclesStr = animVehicles.toLocaleString('en-US').replace(/,/g, '\u00a0');
-  const filtSuccessRate = hasFilter ? Math.min(98, Math.max(70, stats.successRate + rv)) : stats.successRate;
-  const filtFailureRate = hasFilter ? 100 - filtSuccessRate : stats.failureRate;
-  const filtLaunchRate  = hasFilter ? Math.min(100, Math.max(78, stats.launchRate + ((fSeed % 7) - 3))) : stats.launchRate;
+  const filtSuccessRate = isFailed ? stats.successRate : hasFilter ? Math.min(98, Math.max(70, stats.successRate + rv)) : stats.successRate;
+  const filtFailureRate = isFailed ? stats.failureRate : hasFilter ? 100 - filtSuccessRate : stats.failureRate;
+  const filtLaunchRate  = isFailed ? stats.launchRate : hasFilter ? Math.min(100, Math.max(78, stats.launchRate + ((fSeed % 7) - 3))) : stats.launchRate;
+  const campaignVehicleSegments = isFailed ? VEHICLE_SEGMENTS_FAILED : filtLaunchRate === 100 ? VEHICLE_SEGMENTS_NO_ERRORS : VEHICLE_SEGMENTS;
   const filtDailyCars   = hasFilter ? Math.max(1, Math.round(stats.dailyCars * filterScale)) : stats.dailyCars;
   // Models/countries counts reflect cascading selections
   const filtModels = effectiveModel !== null
@@ -1843,6 +2204,7 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
           )}
         </div>
 
+        {activeTab === 'OVERVIEW' && (<>
         {/* ── Filter bar ── */}
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <FilterDropdown
@@ -1940,11 +2302,23 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
               <span style={{ fontSize: 26, fontWeight: 700, color: '#ffffff', fontFamily: "'Inter', sans-serif" }}>{filtVehiclesStr}</span>
               <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 2 }}>Vehicles</div>
             </div>
-            <ShowVinsButton onClick={() => setVinsOpen(true)} />
+            <ShowVinsButton onClick={() => { setVinsIntervalOverride(null); setVinsSegmentFilter(null); setVinsVehicleSegments(campaignVehicleSegments); setVinsOpen(true); }} disabled={campaignSegmentActive} />
           </div>
 
-          <VehicleBar totalVehicles={filtVehiclesNum} disabled={isCreated} onShowVins={() => setVinsOpen(true)} />
+          <VehicleBar totalVehicles={filtVehiclesNum} disabled={isCreated} onShowVins={seg => { setVinsIntervalOverride(null); setVinsSegmentFilter(seg); setVinsVehicleSegments(null); setVinsOpen(true); }} noErrors={!isFailed && filtLaunchRate === 100} segmentsOverride={isFailed ? VEHICLE_SEGMENTS_FAILED : undefined} onSegmentChange={setCampaignSegmentActive} />
         </div>
+        </>)}
+
+        {activeTab === 'WAVES' && (
+          <IntervalsView
+            dist={dist}
+            campaignFilters={campaignFilters}
+            isCreated={isCreated}
+            noErrors={filtLaunchRate === 100}
+            onShowVins={handleShowVinsForInterval}
+            campaignId={campaign.id}
+          />
+        )}
 
         {/* ── Bottom action bar (floating) ── */}
         <div style={{
@@ -2000,10 +2374,12 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
           <VinsModal
             campaign={campaign}
             dist={dist}
-            selectedCountry={selectedCountry}
-            effectiveModel={effectiveModel}
-            effectiveInterval={effectiveInterval}
-            onClose={() => setVinsOpen(false)}
+            selectedCountry={vinsIntervalOverride !== null ? null : selectedCountry}
+            effectiveModel={vinsIntervalOverride !== null ? null : effectiveModel}
+            effectiveInterval={vinsIntervalOverride !== null ? vinsIntervalOverride : effectiveInterval}
+            segmentFilter={vinsSegmentFilter}
+            vehicleSegments={vinsVehicleSegments}
+            onClose={() => { setVinsOpen(false); setVinsIntervalOverride(null); setVinsSegmentFilter(null); setVinsVehicleSegments(null); }}
             onCopy={vin => setCopyToast(vin)}
           />
         )}

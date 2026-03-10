@@ -37,9 +37,25 @@ const CAMPAIGNS = [
   { id: 21, name: 'France Region Software Patch',      vehicles: '85',     code: 'FA01', crit: '01', spec: 'ID_SW.2.9.1_FR_K3_V1_0-2_2023-07-07_0848.xlsx',  measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['COMPLETED'] },
   { id: 22, name: 'US East Coast ECU Calibration',     vehicles: '63',     code: 'FA01', crit: '01', spec: 'ID_ECU.6.1.4_US_V2_0-3_R2_2022-11-30_1024.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
   { id: 23, name: 'Brazil South Fleet Firmware',       vehicles: '264',    code: 'FA01', crit: '01', spec: 'ID_FW.4.0.7_BR_K4_V3_1-1_2023-02-16_1349.xlsx',  measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
+  { id: 24, name: 'Japan Region ECU Full Update',      vehicles: '12 345', code: 'FA01', crit: '02', spec: 'ID_ECU.9.1.0_JP_V5_2-1_R3_2024-04-18_1004.xlsx', measure: '',                type: 'Partial', date: '18.04.2024', statuses: ['RUNNING'] },
+  { id: 25, name: 'Italy Network Firmware Patch',      vehicles: '891',    code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_15.03.24',   type: 'Full',  date: '15.03.2024', statuses: ['COMPLETED'] },
+  { id: 26, name: 'Poland Regional Drive Fix',         vehicles: '3 241',  code: 'SE03', crit: '03', spec: 'ID_DRV.1.2.4_PL_K2_V3_0-1_2023-11-09_0732.xlsx', measure: '',                type: 'Partial', date: '09.11.2023', statuses: ['FAILED'] },
+  { id: 27, name: 'UK Fleet Powertrain Update',        vehicles: '47 821', code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_22.01.24',  type: 'Full',  date: '22.01.2024', statuses: ['RUNNING'] },
+  { id: 28, name: 'South Korea Brake Module Fix',      vehicles: '2 067',  code: 'SE03', crit: '03', spec: 'ID_BRK.6.0.2_KR_V4_1-3_R2_2023-05-30_1521.xlsx', measure: '',                type: 'Partial', date: '30.05.2023', statuses: ['COMPLETED'] },
+  { id: 29, name: 'Argentina Fleet Diagnostic',        vehicles: '523',    code: 'FA01', crit: '01', spec: 'ID_DGN.3.1.7_AR_K1_V2_0-2_2024-06-12_0855.xlsx', measure: '',                type: 'Partial', date: '12.06.2024', statuses: ['DRAFT'] },
+  { id: 30, name: 'China North Gateway Patch',         vehicles: '18 492', code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_08.09.23',   type: 'Full',  date: '08.09.2023', statuses: ['RUNNING'] },
+  { id: 31, name: 'Netherlands Critical Hotfix',       vehicles: '178',    code: 'FA01', crit: '01', spec: 'ID_HF.2.4.3_NL_K3_V1_0-1_2024-02-27_1233.xlsx', measure: '',                type: 'Partial', date: '27.02.2024', statuses: ['CREATED'] },
+  { id: 32, name: 'India South ECU Calibration',       vehicles: '9 304',  code: 'FA01', crit: '02', spec: 'ID_ECU.5.2.8_IN_V3_1-4_R1_2023-08-14_0647.xlsx', measure: '',                type: 'Partial', date: '14.08.2023', statuses: ['COMPLETED'] },
+  { id: 33, name: 'Spain East Software Update',        vehicles: '654',    code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_17.05.24',  type: 'Full',  date: '17.05.2024', statuses: ['RUNNING'] },
+  { id: 34, name: 'Russia West Fleet Firmware',        vehicles: '4 112',  code: 'SE03', crit: '03', spec: 'ID_FW.7.3.1_RU_K4_V5_2-0_2023-12-20_1118.xlsx', measure: '',                type: 'Partial', date: '20.12.2023', statuses: ['CALCULATED'] },
+  { id: 35, name: 'Vietnam Fleet Drivetrain Fix',      vehicles: '267',    code: 'FA01', crit: '01', spec: 'ID_DRV.4.0.5_VN_K1_V2_1-3_2023-06-28_0930.xlsx', measure: '',                type: 'Partial', date: '28.06.2023', statuses: ['FAILED'] },
+  { id: 36, name: 'Egypt Region Software Hotfix',      vehicles: '1 893',  code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_30.11.23',   type: 'Full',  date: '30.11.2023', statuses: ['RUNNING'] },
+  { id: 37, name: 'Thailand Gateway Calibration',      vehicles: '732',    code: 'FA01', crit: '01', spec: 'ID_GW.3.5.0_TH_V2_0-1_R1_2024-03-09_1445.xlsx', measure: '',                type: 'Partial', date: '09.03.2024', statuses: ['COMPLETED'] },
+  { id: 38, name: 'South Africa Brake System',         vehicles: '4 562',  code: 'SE03', crit: '03', spec: 'ID_BRK.5.1.3_ZA_K2_V4_1-0_2024-07-01_0812.xlsx', measure: '',                type: 'Partial', date: '01.07.2024', statuses: ['DRAFT'] },
+  { id: 39, name: 'Czech Fleet ECU Diagnostic',        vehicles: '836',    code: 'FA01', crit: '02', spec: 'ID_DGN.6.2.1_CZ_K3_V1_0-3_2023-10-15_1556.xlsx', measure: '',                type: 'Partial', date: '15.10.2023', statuses: ['CREATED'] },
 ];
 
-const TAB_TOTAL = { all: 23, active: 15, inactive: 8, mine: 6, attention: 4 };
+const TAB_TOTAL = { all: 39, active: 23, inactive: 16, mine: 8, attention: 11 };
 const PER_PAGE = 24;
 
 function buildPages(total) {
@@ -48,22 +64,22 @@ function buildPages(total) {
   return [1, 2, 3, '…', total];
 }
 
-const MINE_IDS = new Set([1, 2, 4, 13, 22, 23]);
+const MINE_IDS = new Set([1, 2, 4, 13, 22, 23, 26, 31]);
 
 const TAB_FILTER = {
   all:       () => true,
   active:    r => ['RUNNING', 'CALCULATED', 'CREATED'].includes(r.statuses[0]),
   inactive:  r => ['FAILED', 'DRAFT', 'COMPLETED'].includes(r.statuses[0]),
   mine:      r => MINE_IDS.has(r.id),
-  attention: r => ['FAILED', 'CREATED'].includes(r.statuses[0]),
+  attention: r => ['FAILED', 'CREATED', 'CALCULATED'].includes(r.statuses[0]),
 };
 
 const TABS_TOP = [
-  { id: 'all', label: 'ALL', count: 23 },
-  { id: 'active', label: 'ACTIVE', count: 15 },
-  { id: 'inactive', label: 'INACTIVE', count: 8 },
-  { id: 'attention', label: 'NEED ATTENTION', count: 4 },
-  { id: 'mine', label: 'MINE', count: 6 },
+  { id: 'all', label: 'ALL', count: 39 },
+  { id: 'active', label: 'ACTIVE', count: 23 },
+  { id: 'inactive', label: 'INACTIVE', count: 16 },
+  { id: 'attention', label: 'NEED ATTENTION', count: 11 },
+  { id: 'mine', label: 'MINE', count: 8 },
 ];
 
 const TABS_BOTTOM = [
@@ -806,7 +822,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
               </div>
             )}
             {sortedCampaigns.map((row, i) => {
-              const isCreated = row.statuses[0] === 'CREATED';
+              const isCreated = row.statuses[0] === 'CREATED' || row.statuses[0] === 'CALCULATED';
               const baseBg = isCreated
                 ? (i % 2 === 0 ? 'rgba(100,140,165,0.07)' : 'rgba(100,140,165,0.12)')
                 : (i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)');
