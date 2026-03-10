@@ -405,8 +405,8 @@ function ProfileOverlay({ onClose, activeBrand: activeBrandProp, onBrandChange, 
               position: 'relative',
               width: 108, height: 108, borderRadius: 32,
               background: 'linear-gradient(135deg, #005478 0%, #003050 100%)',
-              border: '1px solid rgba(40,119,156,0.4)',
-              boxShadow: '0px 0px 32px 0px rgba(0,0,0,0.32)',
+              border: '1px solid rgba(40,119,156,0.3)',
+              animation: 'avatarBorderPulse 2.8s ease-in-out infinite',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <span style={{
@@ -529,13 +529,13 @@ const CheckIcon = () => (
   </svg>
 );
 
-function DataImportRow({ label, ts }) {
+function DataImportRow({ label, ts, queued, onToggle }) {
   const [hovered, setHovered] = useState(false);
-  const [queued, setQueued] = useState(false);
+  const [tsHov, setTsHov] = useState(false);
   const [animKey, setAnimKey] = useState(0);
 
   function handleClick() {
-    setQueued(q => !q);
+    onToggle();
     setAnimKey(k => k + 1);
   }
 
@@ -553,14 +553,36 @@ function DataImportRow({ label, ts }) {
       }}>
         {label}
       </span>
-      <span style={{
-        flex: 1, fontSize: 10, fontWeight: 500, color: '#80b0c8',
-        fontFamily: "'Inter', sans-serif",
-        letterSpacing: 0.2, textTransform: 'uppercase',
-        textAlign: 'right', whiteSpace: 'nowrap',
-      }}>
-        {ts}
-      </span>
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', position: 'relative' }}
+        onMouseEnter={() => setTsHov(true)}
+        onMouseLeave={() => setTsHov(false)}
+      >
+        <span style={{
+          fontSize: 10, fontWeight: 500,
+          color: tsHov ? '#ccdfe9' : '#80b0c8',
+          fontFamily: "'Inter', sans-serif",
+          letterSpacing: 0.2, textTransform: 'uppercase',
+          whiteSpace: 'nowrap',
+          transition: 'color 0.15s',
+          cursor: 'default',
+        }}>
+          {ts}
+        </span>
+        {tsHov && (
+          <div style={{
+            position: 'absolute', bottom: 'calc(100% + 6px)', right: 0,
+            padding: '4px 10px', borderRadius: 6,
+            background: '#012d42', border: '1px solid #153f53',
+            fontSize: 11, fontWeight: 600, color: '#80b0c8',
+            fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+            pointerEvents: 'none', zIndex: 200,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
+            animation: 'tooltipFadeIn 0.12s ease forwards',
+          }}>
+            Last Update
+          </div>
+        )}
+      </div>
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div
           key={animKey}
@@ -699,11 +721,33 @@ function FrequencySelect({ value, onChange }) {
   );
 }
 
-function DataImportOverlay({ onClose }) {
+function DataImportOverlay({ onClose, onScheduled }) {
   const [closing, setClosing] = useState(false);
   const [freq, setFreq] = useState('Everyday');
   const [time, setTime] = useState('22:00');
   const [timeHov, setTimeHov] = useState(false);
+  const [queued, setQueued] = useState(new Set());
+  const [schedHov, setSchedHov] = useState(false);
+  const [scheduling, setScheduling] = useState(false);
+
+  function toggleQueued(label) {
+    setQueued(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label); else next.add(label);
+      return next;
+    });
+  }
+
+  const anyQueued = queued.size > 0;
+
+  function handleSchedule() {
+    if (!anyQueued || scheduling) return;
+    setScheduling(true);
+    setTimeout(() => {
+      setClosing(true);
+      onScheduled();
+    }, 2200);
+  }
 
   function handleClose() { setClosing(true); }
 
@@ -719,7 +763,7 @@ function DataImportOverlay({ onClose }) {
           position: 'fixed',
           left: 120,
           bottom: 24,
-          width: 364,
+          width: 420,
           background: 'rgba(1,38,56,0.62)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
@@ -790,7 +834,7 @@ function DataImportOverlay({ onClose }) {
                     background: 'transparent', border: 'none', outline: 'none',
                     fontSize: 12, fontWeight: 500, color: '#ffffff',
                     fontFamily: "'Inter', sans-serif",
-                    width: 54, cursor: 'pointer',
+                    width: 68, cursor: 'pointer',
                     colorScheme: 'dark',
                   }}
                 />
@@ -806,9 +850,46 @@ function DataImportOverlay({ onClose }) {
             boxShadow: '0px 0px 2px 0px rgba(0,0,0,0.24)',
           }}>
             {DATA_ROWS.map(row => (
-              <DataImportRow key={row.label} label={row.label} ts={row.ts} />
+              <DataImportRow key={row.label} label={row.label} ts={row.ts} queued={queued.has(row.label)} onToggle={() => toggleQueued(row.label)} />
             ))}
           </div>
+
+          {/* SCHEDULE button */}
+          <button
+            disabled={!anyQueued || scheduling}
+            onClick={handleSchedule}
+            onMouseEnter={() => anyQueued && !scheduling && setSchedHov(true)}
+            onMouseLeave={() => setSchedHov(false)}
+            style={{
+              width: '100%', height: 40, borderRadius: 8,
+              background: anyQueued
+                ? (schedHov && !scheduling ? '#005a80' : '#004666')
+                : 'rgba(21,63,83,0.3)',
+              border: 'none',
+              boxShadow: anyQueued
+                ? (schedHov && !scheduling
+                  ? '0px 2px 8px 0px rgba(0,37,55,0.48)'
+                  : '0px 1px 4px 0px rgba(0,37,55,0.32)')
+                : 'none',
+              color: anyQueued ? '#ccdfe9' : 'rgba(128,176,200,0.3)',
+              fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase',
+              fontFamily: "'Inter', sans-serif",
+              cursor: anyQueued && !scheduling ? 'pointer' : 'not-allowed',
+              transition: 'background 0.15s, box-shadow 0.15s',
+              flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            {scheduling ? (
+              <svg
+                width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="rgba(204,223,233,0.8)" strokeWidth="2.5" strokeLinecap="round"
+                style={{ animation: 'schedSpin 0.75s linear infinite' }}
+              >
+                <path d="M12 2a10 10 0 0 1 10 10" />
+              </svg>
+            ) : 'Schedule'}
+          </button>
         </div>
       </div>
     </>
@@ -856,9 +937,60 @@ function AvatarButton({ profileOpen, onClick }) {
   );
 }
 
+function ScheduleToast({ onDone }) {
+  const [hiding, setHiding] = useState(false);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setHiding(true), 3200);
+    const t2 = setTimeout(() => onDone(), 3600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  return (
+    <div
+      onAnimationEnd={() => { if (hiding) onDone(); }}
+      style={{
+        position: 'fixed', top: 20, right: 20, zIndex: 999,
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '12px 16px', borderRadius: 12,
+        background: 'rgba(10,40,18,0.88)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        border: '1px solid rgba(40,140,80,0.45)',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.32), 0 0 0 1px rgba(40,140,80,0.12)',
+        animation: hiding
+          ? 'toastSlideOut 0.32s ease forwards'
+          : 'toastSlideIn 0.28s ease forwards',
+        pointerEvents: 'none',
+      }}
+    >
+      {/* Check icon */}
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+        background: 'rgba(40,140,80,0.25)', border: '1px solid rgba(56,176,96,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4cd87a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+      {/* Text */}
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#4cd87a', fontFamily: "'Inter', sans-serif", letterSpacing: 0.3 }}>
+          Schedule saved
+        </div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(56,176,96,0.7)', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+          Auto-import has been successfully scheduled.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Sidebar({ activeNav, onNavChange, attentionCount, activeBrand, onBrandChange, onLogout }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [dataImportOpen, setDataImportOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   return (
     <>
@@ -932,7 +1064,8 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, active
       </div>
 
       {profileOpen && <ProfileOverlay onClose={() => setProfileOpen(false)} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />}
-      {dataImportOpen && <DataImportOverlay onClose={() => setDataImportOpen(false)} />}
+      {dataImportOpen && <DataImportOverlay onClose={() => setDataImportOpen(false)} onScheduled={() => { setDataImportOpen(false); setShowToast(true); }} />}
+      {showToast && <ScheduleToast onDone={() => setShowToast(false)} />}
     </>
   );
 }

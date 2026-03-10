@@ -19,15 +19,32 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-export default function FloatingInput({ label, type = 'text' }) {
+export default function FloatingInput({ label, type = 'text', value: controlledValue, onChange, error }) {
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [value, setValue]     = useState('');
+  const [internalValue, setInternalValue] = useState('');
   const [visible, setVisible] = useState(false);
   const inputRef = useRef(null);
 
+  const isControlled = controlledValue !== undefined;
+  const value = isControlled ? controlledValue : internalValue;
+  const handleChange = e => {
+    if (!isControlled) setInternalValue(e.target.value);
+    onChange?.(e.target.value);
+  };
+
   const isPassword = type === 'password';
   const floated    = focused || value.length > 0;
+
+  const borderColor = error
+    ? (focused ? '#cc3333' : hovered ? '#b43030' : 'rgba(180,40,40,0.7)')
+    : (focused ? '#28779c' : hovered ? '#2a6a87' : '#16506c');
+  const bgColor = error
+    ? (focused ? 'rgba(180,40,40,0.14)' : hovered ? 'rgba(180,40,40,0.12)' : 'rgba(180,40,40,0.08)')
+    : (focused ? 'rgba(0,70,102,0.24)'  : hovered ? 'rgba(0,70,102,0.22)'  : 'rgba(0,70,102,0.16)');
+  const shadowColor = error
+    ? '0px 0px 8px 0px rgba(180,40,40,0.28), inset 0px 0px 4px 0px rgba(0,0,0,0.24)'
+    : '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)';
 
   return (
     <div
@@ -41,11 +58,9 @@ export default function FloatingInput({ label, type = 'text' }) {
         height: 44,
         paddingRight: isPassword ? 4 : 12,
         borderRadius: 6,
-        border: focused ? '1px solid #28779c' : hovered ? '1px solid #2a6a87' : '1px solid #16506c',
-        background: focused ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)',
-        boxShadow: focused
-          ? '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)'
-          : '0px 1px 2px 0px rgba(0,0,0,0.12)',
+        border: `1px solid ${borderColor}`,
+        background: bgColor,
+        boxShadow: focused ? shadowColor : '0px 1px 2px 0px rgba(0,0,0,0.12)',
         cursor: 'text',
         transition: 'border-color 0.15s, box-shadow 0.15s, background 0.15s',
         overflow: 'hidden',
@@ -79,7 +94,7 @@ export default function FloatingInput({ label, type = 'text' }) {
           ref={inputRef}
           type={isPassword && !visible ? 'password' : 'text'}
           value={value}
-          onChange={e => setValue(e.target.value)}
+          onChange={handleChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           autoComplete={isPassword ? 'current-password' : 'username'}

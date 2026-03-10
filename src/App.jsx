@@ -109,6 +109,49 @@ function AppButton({ children, primary, fullWidth, onClick }) {
   );
 }
 
+function ErrorToast({ onDone }) {
+  const [hiding, setHiding] = useState(false);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setHiding(true), 3200);
+    const t2 = setTimeout(() => onDone(), 3600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  return (
+    <div style={{
+      position: 'fixed', top: 20, right: 20, zIndex: 999,
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '12px 16px', borderRadius: 12,
+      background: 'rgba(40,10,10,0.88)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(180,40,40,0.45)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.32), 0 0 0 1px rgba(180,40,40,0.12)',
+      animation: hiding ? 'toastSlideOut 0.32s ease forwards' : 'toastSlideIn 0.28s ease forwards',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+        background: 'rgba(180,40,40,0.25)', border: '1px solid rgba(200,60,60,0.4)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ff6060" strokeWidth="3" strokeLinecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#ff6060', fontFamily: "'Inter', sans-serif", letterSpacing: 0.3 }}>
+          Invalid credentials
+        </div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: 'rgba(200,60,60,0.7)', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+          Incorrect username or password. Please try again.
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [loginVisible, setLoginVisible] = useState(true);
@@ -124,6 +167,11 @@ export default function App() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutLoaderVisible, setLogoutLoaderVisible] = useState(false);
   const [logoutLoadStep, setLogoutLoadStep] = useState(0);
+  const [loginUser, setLoginUser] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginError, setLoginError] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [toastKey, setToastKey] = useState(0);
 
   function handleBrandChange(newBrand) {
     setDashVisible(false);
@@ -160,6 +208,13 @@ export default function App() {
   const isMobile = windowWidth < 560;
 
   function handleLogin() {
+    if (loginUser !== 'admin' || loginPass !== 'admin') {
+      setLoginError(true);
+      setShowErrorToast(true);
+      setToastKey(k => k + 1);
+      return;
+    }
+    setLoginError(false);
     setLoginVisible(false);
     setTimeout(() => {
       setLoading(true);
@@ -236,7 +291,7 @@ export default function App() {
           </svg>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', textAlign: 'center' }}>
           <div style={{
             fontSize: 17, fontWeight: 700, color: '#ffffff',
             fontFamily: "'Inter', sans-serif", letterSpacing: 0.2,
@@ -263,6 +318,7 @@ export default function App() {
   }
 
   return (
+    <>
     <div style={{
       width: 496,
       padding: '56px 24px 24px',
@@ -294,9 +350,9 @@ export default function App() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
         {/* Inputs */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <FloatingInput label="User" type="text" />
-          <FloatingInput label="Password" type="password" />
+        <div style={{ display: 'flex', gap: 12 }} onKeyDown={e => { if (e.key === 'Enter') handleLogin(); }}>
+          <FloatingInput label="User" type="text" value={loginUser} onChange={v => { setLoginUser(v); setLoginError(false); }} error={loginError} />
+          <FloatingInput label="Password" type="password" value={loginPass} onChange={v => { setLoginPass(v); setLoginError(false); }} error={loginError} />
         </div>
 
         {/* Brand grid */}
@@ -320,5 +376,7 @@ export default function App() {
       </div>
 
     </div>
+    {showErrorToast && <ErrorToast key={toastKey} onDone={() => setShowErrorToast(false)} />}
+    </>
   );
 }
