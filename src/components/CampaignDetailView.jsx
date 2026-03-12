@@ -578,7 +578,7 @@ const VIN_COLUMNS = [
   { key: 'status',    label: 'STATUS' },
 ];
 
-function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveInterval, segmentFilter, vehicleSegments, onClose, onCopy }) {
+function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveInterval, segmentFilter, vehicleSegments, onClose, onCopy, isTest }) {
   const [closing, setClosing] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [search, setSearch] = useState('');
@@ -741,13 +741,15 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
         {/* Table header */}
         <div style={{
           flexShrink: 0,
-          display: 'grid', gridTemplateColumns: showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr',
+          display: 'grid', gridTemplateColumns: isTest
+            ? (showStatus ? '2.2fr 1.2fr 1.1fr' : '2.2fr 1.2fr')
+            : (showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr'),
           padding: '10px 12px',
           background: 'rgb(1,41,64)',
           borderRadius: 10,
           scrollbarGutter: 'stable',
         }}>
-          {(showStatus ? VIN_COLUMNS : VIN_COLUMNS.slice(0, 4)).map(col => {
+          {(showStatus ? VIN_COLUMNS : VIN_COLUMNS.slice(0, 4)).filter(col => !isTest || (col.key !== 'country' && col.key !== 'interval')).map(col => {
             const isActive = sort.key === col.key;
             const isHov = hoveredCol === col.key;
             return (
@@ -792,7 +794,7 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
               <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(128,176,200,0.4)', fontFamily: "'Inter', sans-serif" }}>No VINs match your search</span>
             </div>
           ) : (
-            displayed.map((item, i) => <VinRow key={item.vin} item={item} i={i} onCopy={onCopy} showStatus={showStatus} />)
+            displayed.map((item, i) => <VinRow key={item.vin} item={item} i={i} onCopy={onCopy} showStatus={showStatus} isTest={isTest} />)
           )}
         </div>
       </div>
@@ -800,7 +802,7 @@ function VinsModal({ campaign, dist, selectedCountry, effectiveModel, effectiveI
   );
 }
 
-function VinRow({ item, i, onCopy, showStatus }) {
+function VinRow({ item, i, onCopy, showStatus, isTest }) {
   const [hovered, setHovered] = useState(false);
   const [copyHovered, setCopyHovered] = useState(false);
 
@@ -814,7 +816,9 @@ function VinRow({ item, i, onCopy, showStatus }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setCopyHovered(false); }}
       style={{
-        display: 'grid', gridTemplateColumns: showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr',
+        display: 'grid', gridTemplateColumns: isTest
+          ? (showStatus ? '2.2fr 1.2fr 1.1fr' : '2.2fr 1.2fr')
+          : (showStatus ? '2.2fr 1.2fr 1.2fr 1fr 1.1fr' : '2.2fr 1.2fr 1.2fr 1fr'),
         alignItems: 'center',
         padding: '9px 12px', borderRadius: 8,
         background: hovered ? 'rgba(0,70,102,0.22)' : i % 2 === 0 ? 'transparent' : 'rgba(0,40,60,0.18)',
@@ -849,8 +853,8 @@ function VinRow({ item, i, onCopy, showStatus }) {
         </button>
       </div>
       <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.productId}</span>
-      <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.country}</span>
-      <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.interval}</span>
+      {!isTest && <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.country}</span>}
+      {!isTest && <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.8)', fontFamily: "'Inter', sans-serif" }}>{item.interval}</span>}
       {showStatus && (
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -1049,19 +1053,24 @@ function VehicleBar({ totalVehicles, disabled, onShowVins, noErrors, segmentsOve
       {/* Sub-segment detail panel */}
       {selectedSeg !== null && (
         <div
-          onAnimationEnd={handleDetailAnimEnd}
+          onTransitionEnd={closingDetail ? e => { if (e.propertyName === 'opacity') handleDetailAnimEnd(); } : undefined}
           style={{
-            marginTop: -6,
+            overflow: 'hidden',
+            opacity: closingDetail ? 0 : 1,
+            maxHeight: closingDetail ? 0 : 300,
+            transition: closingDetail ? 'max-height 0.24s ease, opacity 0.18s ease' : 'none',
+          }}
+        >
+        <div
+          style={{
+            marginTop: 6,
             background: 'rgba(0,16,28,0.82)',
-            border: `1px solid ${activeSeg.color}44`,
-            borderTop: `2px solid ${activeSeg.color}88`,
-            borderRadius: '0 0 8px 8px',
-            padding: '10px 14px 12px',
+            border: '1px solid #153f53',
+            borderRadius: 10,
+            padding: '14px 14px 12px',
             display: 'flex', flexDirection: 'column', gap: 10,
             position: 'relative', zIndex: 2,
-            animation: closingDetail
-              ? 'detailSlideOut 0.22s ease forwards'
-              : 'detailSlideIn 0.3s cubic-bezier(0.22,1,0.36,1) both',
+            animation: closingDetail ? 'none' : 'detailSlideIn 0.3s cubic-bezier(0.22,1,0.36,1) both',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1101,6 +1110,7 @@ function VehicleBar({ totalVehicles, disabled, onShowVins, noErrors, segmentsOve
               </div>
             ))}
           </div>
+        </div>
         </div>
       )}
 
@@ -1235,7 +1245,7 @@ const CONFIGURE_PARAMS = {
   ],
 };
 
-function ParamField({ label, value, unit, tooltip, isRightCol }) {
+function ParamField({ label, value, unit, tooltip, isRightCol, tooltipBelow }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div
@@ -1267,7 +1277,7 @@ function ParamField({ label, value, unit, tooltip, isRightCol }) {
       {hovered && tooltip && (
         <div style={{
           position: 'absolute',
-          bottom: 'calc(100% + 7px)',
+          ...(tooltipBelow ? { top: 'calc(100% + 7px)' } : { bottom: 'calc(100% + 7px)' }),
           ...(isRightCol ? { right: 0 } : { left: 0 }),
           width: 220,
           background: '#012d42', border: '1px solid #153f53', borderRadius: 8,
@@ -1380,12 +1390,12 @@ function ConfigureOverlay({ onClose }) {
         </div>
 
         {/* Parameter grid (scrollable) */}
-        <div style={{ overflowY: 'auto', flexShrink: 1, minHeight: 0, paddingTop: 44, marginTop: -44 }}>
+        <div style={{ overflowY: 'auto', flexShrink: 1, minHeight: 0, paddingRight: 12 }}>
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8,
           }}>
             {params.map((p, i) => (
-              <ParamField key={i} label={p.label} value={p.value} unit={p.unit} tooltip={p.tooltip} isRightCol={i % 2 === 1} />
+              <ParamField key={i} label={p.label} value={p.value} unit={p.unit} tooltip={p.tooltip} isRightCol={i % 2 === 1} tooltipBelow={i < 2} />
             ))}
           </div>
         </div>
@@ -1425,7 +1435,7 @@ function IntervalListItem({ name, count, maxCount, active, onClick, status }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         padding: '10px 12px', borderRadius: 10, cursor: 'pointer',
-        background: active ? 'rgba(0,70,102,0.5)' : '#012d42',
+        background: active ? '#012d42' : 'rgba(0,45,68,0.62)',
         border: active ? '1px solid #28779c' : hovered ? '1px solid #28779c' : '1px solid #004666',
         boxShadow: active ? '0px 0px 12px 0px rgba(0,30,45,0.32)' : 'none',
         transition: 'all 0.15s', display: 'flex', flexDirection: 'column', gap: 7,
@@ -1479,7 +1489,6 @@ function BreakdownPanel({ title, items }) {
       background: 'rgba(1,45,66,0.55)', border: '1px solid #153f53',
       borderRadius: 16, padding: '14px 16px',
       display: 'flex', flexDirection: 'column', gap: 12,
-      overflowY: 'auto',
     }}>
       <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.8, textTransform: 'uppercase', flexShrink: 0 }}>
         {title}
@@ -1494,8 +1503,9 @@ function BreakdownPanel({ title, items }) {
 }
 
 // ─── Interval detail ──────────────────────────────────────────────────────────
-function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignId, intervalIdx }) {
+function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignId, intervalIdx, onSegmentChange }) {
   const [segmentActive, setSegmentActive] = useState(false);
+  function handleSegmentChange(v) { setSegmentActive(v); onSegmentChange?.(v); }
   const intervalDist = dist.filter(r => r.interval === name);
   const totalCount = intervalDist.reduce((s, r) => s + r.count, 0);
   const animTotal = useCountUp(totalCount);
@@ -1532,7 +1542,7 @@ function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignI
   const modelsCount = modelItems.length;
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 60, overflowY: 'auto' }}>
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 68, paddingRight: 12, overflowY: 'auto' }}>
       {/* Row 1: Interval number / Countries / Models */}
       <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
         <StatCard value={intervalNum} label="Interval" />
@@ -1575,11 +1585,11 @@ function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignI
           </div>
           <ShowVinsButton onClick={() => onShowVins(name, null, intervalSegments ?? null)} disabled={segmentActive} />
         </div>
-        <VehicleBar totalVehicles={totalCount} disabled={isIntervalDisabled} onShowVins={seg => onShowVins(name, seg, null)} noErrors={noErrors && !isIntervalFailed} segmentsOverride={intervalSegments} onSegmentChange={setSegmentActive} />
+        <VehicleBar totalVehicles={totalCount} disabled={isIntervalDisabled} onShowVins={seg => onShowVins(name, seg, null)} noErrors={noErrors && !isIntervalFailed} segmentsOverride={intervalSegments} onSegmentChange={handleSegmentChange} />
       </div>
 
       {/* Breakdown panels */}
-      <div style={{ flex: 1, display: 'flex', gap: 12, minHeight: 0 }}>
+      <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
         <BreakdownPanel title="BY COUNTRY" items={countryItems} />
         <BreakdownPanel title="BY MODEL" items={modelItems} />
       </div>
@@ -1588,9 +1598,12 @@ function IntervalDetail({ name, dist, isCreated, noErrors, onShowVins, campaignI
 }
 
 // ─── Intervals view ───────────────────────────────────────────────────────────
-function IntervalsView({ dist, campaignFilters, isCreated, noErrors, onShowVins, campaignId }) {
+function IntervalsView({ dist, campaignFilters, isCreated, noErrors, onShowVins, campaignId, onSegmentChange }) {
   const intervals = campaignFilters.intervals;
   const [selectedInterval, setSelectedInterval] = useState(intervals[0] ?? null);
+
+  // Reset segment state when switching intervals
+  useEffect(() => { onSegmentChange?.(false); }, [selectedInterval]);
 
   // Auto-select first interval when intervals list changes
   useEffect(() => {
@@ -1613,7 +1626,7 @@ function IntervalsView({ dist, campaignFilters, isCreated, noErrors, onShowVins,
       <div style={{
         width: 220, flexShrink: 0,
         display: 'flex', flexDirection: 'column', gap: 6,
-        overflowY: 'auto', paddingBottom: 60,
+        overflowY: 'auto', paddingBottom: 60, paddingRight: 12,
       }}>
         {intervalCounts.map(({ name, count, status }) => (
           <IntervalListItem
@@ -1638,6 +1651,7 @@ function IntervalsView({ dist, campaignFilters, isCreated, noErrors, onShowVins,
           onShowVins={onShowVins}
           campaignId={campaignId}
           intervalIdx={selIdx}
+          onSegmentChange={onSegmentChange}
         />
       )}
     </div>
@@ -1952,7 +1966,7 @@ function AbortModal({ onClose }) {
   );
 }
 
-function BackButton({ onClick }) {
+function BackButton({ onClick, label }) {
   const [hovered, setHovered] = useState(false);
   return (
     <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -1984,7 +1998,7 @@ function BackButton({ onClick }) {
           boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
           animation: 'tooltipFadeInRight 0.12s ease forwards',
         }}>
-          Back to Overview
+          {label ?? 'Back to Production'}
         </div>
       )}
     </div>
@@ -1992,8 +2006,8 @@ function BackButton({ onClick }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export default function CampaignDetailView({ campaign, onBack, activeBrand, onBrandChange, onLogout }) {
-  const [activeNav, setActiveNav] = useState('aftersales');
+export default function CampaignDetailView({ campaign, onBack, activeBrand, onBrandChange, onLogout, isTest, onExternalNavChange }) {
+  const [activeNav, setActiveNav] = useState(isTest ? 'people' : 'aftersales');
   const [activeTab, setActiveTab] = useState('OVERVIEW');
   const [configureOpen, setConfigureOpen] = useState(false);
   const [abortOpen, setAbortOpen] = useState(false);
@@ -2009,13 +2023,15 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
   const [vinsSegmentFilter, setVinsSegmentFilter] = useState(null);
   const [vinsVehicleSegments, setVinsVehicleSegments] = useState(null);
   const [campaignSegmentActive, setCampaignSegmentActive] = useState(false);
+  const [waveSegmentActive, setWaveSegmentActive] = useState(false);
   const [copyToast, setCopyToast] = useState(null); // vin string or null
 
   const brandId = activeBrand?.id ?? 'vw';
   const campaignFilters = getCampaignFilters(campaign, brandId);
   const dist = getCampaignDistribution(campaign, brandId);
 
-  useEffect(() => { setSelectedCountry(null); setSelectedModel(null); setSelectedInterval(null); }, [campaign.id]);
+  useEffect(() => { setSelectedCountry(null); setSelectedModel(null); setSelectedInterval(null); setWaveSegmentActive(false); }, [campaign.id]);
+  useEffect(() => { setWaveSegmentActive(false); }, [activeTab]);
   useEffect(() => { setSelectedModel(null); setSelectedInterval(null); }, [brandId]);
 
   // ── Cascading available options derived from the distribution ────────────────
@@ -2161,7 +2177,7 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
       backgroundColor: '#003050',
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={2} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
+      <Sidebar activeNav={activeNav} onNavChange={nav => { setActiveNav(nav); if (onExternalNavChange) onExternalNavChange(nav); }} attentionCount={11} testAttentionCount={5} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
 
       {/* Main area */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0, position: 'relative' }}>
@@ -2169,7 +2185,7 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
         {/* ── Header ── */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
           {/* Back button */}
-          <BackButton onClick={handleBack} />
+          <BackButton onClick={handleBack} label={isTest ? 'Back to Tests' : 'Back to Production'} />
 
           {/* Campaign name */}
           <span style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.3, whiteSpace: 'nowrap' }}>
@@ -2207,27 +2223,31 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
         {activeTab === 'OVERVIEW' && (<>
         {/* ── Filter bar ── */}
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          {!isTest && (
+            <FilterDropdown
+              allLabel="All Countries"
+              options={campaignFilters.countries}
+              value={selectedCountry}
+              onChange={setSelectedCountry}
+              triggerWidth={168}
+            />
+          )}
           <FilterDropdown
-            allLabel="All Countries"
-            options={campaignFilters.countries}
-            value={selectedCountry}
-            onChange={setSelectedCountry}
-            triggerWidth={168}
-          />
-          <FilterDropdown
-            allLabel="All Product IDs"
+            allLabel="All Models"
             options={availableModels}
             value={effectiveModel}
             onChange={setSelectedModel}
             triggerWidth={144}
           />
-          <FilterDropdown
-            allLabel="All Intervals"
-            options={availableIntervals}
-            value={effectiveInterval}
-            onChange={setSelectedInterval}
-            triggerWidth={126}
-          />
+          {!isTest && (
+            <FilterDropdown
+              allLabel="All Intervals"
+              options={availableIntervals}
+              value={effectiveInterval}
+              onChange={setSelectedInterval}
+              triggerWidth={126}
+            />
+          )}
         </div>
 
         {/* ── Stats ── */}
@@ -2309,7 +2329,7 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
         </div>
         </>)}
 
-        {activeTab === 'WAVES' && (
+        {!isTest && activeTab === 'WAVES' && (
           <IntervalsView
             dist={dist}
             campaignFilters={campaignFilters}
@@ -2325,16 +2345,20 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
           position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '6px 8px', borderRadius: 14,
-          background: 'rgba(1,28,42,0.72)',
-          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(21,63,83,0.6)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
+          background: 'rgba(1,45,66,0.75)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid #153f53',
+          boxShadow: '0px 8px 32px rgba(0,0,0,0.48)',
+          animation: 'floatingBarEnter 0.45s cubic-bezier(0.22,1,0.36,1) both',
         }}>
-          <BottomTab label="OVERVIEW" active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} />
-          <BottomTab label="INTERVALS" active={activeTab === 'WAVES'} onClick={() => setActiveTab('WAVES')} />
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)', margin: '0 2px' }} />
+          {!isTest && (
+            <>
+              <BottomTab label="OVERVIEW" active={activeTab === 'OVERVIEW'} onClick={() => setActiveTab('OVERVIEW')} />
+              <BottomTab label="INTERVALS" active={activeTab === 'WAVES'} onClick={() => setActiveTab('WAVES')} />
+              {/* Divider */}
+              <div style={{ width: 1, height: 20, background: 'rgba(255,255,255,0.1)', margin: '0 2px' }} />
+            </>
+          )}
 
           {/* Icon buttons */}
           <IconBtn tooltip="Campaign Parameters" onClick={() => setConfigureOpen(true)}>
@@ -2381,6 +2405,7 @@ export default function CampaignDetailView({ campaign, onBack, activeBrand, onBr
             vehicleSegments={vinsVehicleSegments}
             onClose={() => { setVinsOpen(false); setVinsIntervalOverride(null); setVinsSegmentFilter(null); setVinsVehicleSegments(null); }}
             onCopy={vin => setCopyToast(vin)}
+            isTest={isTest}
           />
         )}
       </div>

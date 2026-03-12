@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import CampaignDetailView from './CampaignDetailView';
+import TestUpdatesView from './TestUpdatesView';
 
 // ─── Status badge config ────────────────────────────────────────────────────
 const STATUS = {
@@ -56,13 +57,6 @@ const CAMPAIGNS = [
 ];
 
 const TAB_TOTAL = { all: 39, active: 23, inactive: 16, mine: 8, attention: 11 };
-const PER_PAGE = 24;
-
-function buildPages(total) {
-  if (total <= 1) return [1];
-  if (total <= 6) return Array.from({ length: total }, (_, i) => i + 1);
-  return [1, 2, 3, '…', total];
-}
 
 const MINE_IDS = new Set([1, 2, 4, 13, 22, 23, 26, 31]);
 
@@ -411,14 +405,13 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
   const [activeTopTab, setActiveTopTab] = useState('all');
   const [activeBottomTab, setActiveBottomTab] = useState('CAMPAIGNS');  // id
   const [searchValue, setSearchValue] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterHovered, setFilterHovered] = useState(false);
   const [searchHovered, setSearchHovered] = useState(false);
   const [filters, setFilters] = useState({ statuses: [], types: [], codes: [], dateFrom: '', dateTo: '' });
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [hoveredCol, setHoveredCol] = useState(null);
-  const [hoveredPage, setHoveredPage] = useState(null);
+  const [loadSubtitle, setLoadSubtitle] = useState('Returning to dashboard');
 
   function handleCampaignOpen(row) {
     setLoadingCampaign(row);
@@ -433,19 +426,33 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     }, 1600);
   }
 
-  function handleCampaignBack() {
-    setSelectedCampaign(null);
+  function triggerBackLoader(subtitle, onDone) {
+    setLoadSubtitle(subtitle);
     setLoadingBack(true);
     setLoadStep(0);
     requestAnimationFrame(() => requestAnimationFrame(() => setLoaderVisible(true)));
     setTimeout(() => setLoadStep(1), 450);
     setTimeout(() => setLoadStep(2), 900);
     setTimeout(() => setLoaderVisible(false), 1300);
-    setTimeout(() => { setLoadingBack(false); setLoadStep(0); }, 1600);
+    setTimeout(() => { setLoadingBack(false); setLoadStep(0); if (onDone) onDone(); }, 1600);
+  }
+
+  function handleCampaignBack() {
+    setSelectedCampaign(null);
+    triggerBackLoader('Returning to dashboard');
+  }
+
+  function handleExternalNavChange(nav) {
+    setSelectedCampaign(null);
+    triggerBackLoader(nav === 'people' ? 'Loading Tests' : 'Returning to dashboard', () => setActiveNav(nav));
+  }
+
+  if (activeNav === 'people') {
+    return <TestUpdatesView activeNav={activeNav} onNavChange={setActiveNav} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />;
   }
 
   if (selectedCampaign) {
-    return <CampaignDetailView campaign={selectedCampaign} onBack={handleCampaignBack} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />;
+    return <CampaignDetailView campaign={selectedCampaign} onBack={handleCampaignBack} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} onExternalNavChange={handleExternalNavChange} />;
   }
 
   if (loadingBack) {
@@ -462,7 +469,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
         }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.6)', fontFamily: "'Inter', sans-serif", letterSpacing: 0.5 }}>
-              Returning to dashboard
+              {loadSubtitle}
             </div>
           </div>
           <div style={{
@@ -577,12 +584,6 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     (filters.dateFrom ? 1 : 0) +
     (filters.dateTo ? 1 : 0);
 
-  const filtersActive = searchLower || activeFilterCount > 0;
-  const totalCount = filtersActive ? tabFiltered.length : (TAB_TOTAL[activeTopTab] ?? 372);
-  const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
-  const displayEnd = Math.min(PER_PAGE, totalCount);
-  const pages = buildPages(totalPages);
-
   const headerCell = {
     fontSize: 10, fontWeight: 700, color: 'rgba(128,176,200,0.6)',
     fontFamily: "'Inter', sans-serif",
@@ -605,7 +606,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
       {/* ── Sidebar ── */}
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
+      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} testAttentionCount={5} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
 
       {/* ── Main area ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0, position: 'relative' }}>
@@ -617,7 +618,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
             fontFamily: "'Montserrat', sans-serif", whiteSpace: 'nowrap',
             letterSpacing: 0.3,
           }}>
-            Overview
+            Production
           </span>
 
           {/* Divider */}
@@ -770,7 +771,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
           </div>
 
           {/* Table rows + sticky header inside same scroll container */}
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 32 }}>
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
             <div style={{
               display: 'flex', alignItems: 'center',
               height: 40, flexShrink: 0,
@@ -865,51 +866,19 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
             })}
           </div>
 
-          {/* Table footer: row count + pagination */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            height: 40, paddingLeft: 16, paddingRight: 12, flexShrink: 0,
-            borderTop: '1px solid #153f53',
-            background: 'rgba(0,30,45,0.3)',
-          }}>
-            <span style={{
-              fontSize: 11, fontWeight: 500, color: 'rgba(128,176,200,0.6)',
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              1 — {displayEnd} / {totalCount}
-            </span>
-            {totalPages > 1 && <div style={{ display: 'flex', gap: 4 }}>
-              {pages.map((p, i) => (
-                <button
-                  key={i}
-                  onClick={() => typeof p === 'number' && setCurrentPage(p)}
-                  onMouseEnter={() => setHoveredPage(i)}
-                  onMouseLeave={() => setHoveredPage(null)}
-                  style={{
-                    width: 28, height: 28, borderRadius: 6, border: 'none',
-                    background: currentPage === p ? '#004666' : hoveredPage === i ? 'rgba(0,70,102,0.25)' : 'transparent',
-                    color: currentPage === p ? '#ffffff' : hoveredPage === i ? 'rgba(128,176,200,0.95)' : 'rgba(128,176,200,0.6)',
-                    fontSize: 11, fontWeight: 600, cursor: typeof p === 'number' ? 'pointer' : 'default',
-                    fontFamily: "'Inter', sans-serif",
-                    transition: 'background 0.12s, color 0.12s',
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>}
-          </div>
         </div>
 
         {/* ── Bottom tab bar (floating) ── */}
         <div style={{
-          position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', bottom: 12, left: '50%',
+          transform: 'translateX(-50%)',
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '6px 8px', borderRadius: 14,
-          background: 'rgba(1,28,42,0.72)',
-          backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(21,63,83,0.6)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
+          background: 'rgba(1,45,66,0.75)',
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid #153f53',
+          boxShadow: '0px 8px 32px rgba(0,0,0,0.48)',
+          animation: 'floatingBarEnter 0.45s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           {TABS_BOTTOM.map(tab => (
             <BottomTab

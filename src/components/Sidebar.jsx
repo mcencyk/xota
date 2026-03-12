@@ -987,7 +987,7 @@ function ScheduleToast({ onDone }) {
   );
 }
 
-export default function Sidebar({ activeNav, onNavChange, attentionCount, activeBrand, onBrandChange, onLogout }) {
+export default function Sidebar({ activeNav, onNavChange, attentionCount, testAttentionCount, activeBrand, onBrandChange, onLogout }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [dataImportOpen, setDataImportOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -1038,8 +1038,8 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, active
 
         <Divider />
 
-        <NavIcon icon={<GridIcon />} active={activeNav === 'aftersales'} badge={attentionCount} label="Overview" onClick={() => onNavChange('aftersales')} />
-        <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} label="Test Updates" onClick={() => onNavChange('people')} />
+        <NavIcon icon={<GridIcon />} active={activeNav === 'aftersales'} badge={attentionCount} label="Production" onClick={() => onNavChange('aftersales')} />
+        <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} badge={testAttentionCount} label="Tests" onClick={() => onNavChange('people')} />
         <NavIcon icon={<ClipboardIcon />} active={activeNav === 'settings'} label="Reports" onClick={() => onNavChange('settings')} />
 
         <Divider />

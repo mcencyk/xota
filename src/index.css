@@ -118,6 +118,16 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes floatingBarEnter {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes floatingHeaderEnter {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes avatarBorderPulse {
   0%, 100% {
     border-color: rgba(40,119,156,0.3);
