@@ -456,7 +456,12 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
       backgroundColor: '#003050',
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
-      <Sidebar activeNav={activeNav} onNavChange={onNavChange} attentionCount={11} testAttentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
+      <Sidebar activeNav={activeNav} onNavChange={nav => { if (nav !== activeNav) triggerBackLoader(nav === 'aftersales' ? 'Loading Production' : 'Returning to tests', () => onNavChange(nav)); }} attentionCount={11} testAttentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout}
+        onOpenCampaign={(campaignId, isTest) => {
+          if (isTest) { const c = TEST_CAMPAIGNS.find(x => x.id === campaignId); if (c) handleCampaignOpen(c); }
+          else { triggerBackLoader('Loading Production', () => onNavChange('aftersales')); }
+        }}
+      />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0, position: 'relative' }}>
 

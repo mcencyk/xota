@@ -421,15 +421,15 @@ function ProfileOverlay({ onClose, activeBrand: activeBrandProp, onBrandChange, 
           {/* Name + role */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <span style={{
-              fontSize: 20, fontWeight: 600, color: '#ffffff',
-              fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.4,
+              fontSize: 15, fontWeight: 700, color: '#ffffff',
+              fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.3,
               whiteSpace: 'nowrap',
             }}>
               John Smith
             </span>
             <span style={{
-              fontSize: 12, fontWeight: 600, color: '#ccdfe9',
-              fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.06,
+              fontSize: 10, fontWeight: 600, color: 'rgba(204,223,233,0.65)',
+              fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.5,
               whiteSpace: 'nowrap',
             }}>
               System Admin
@@ -444,7 +444,6 @@ function ProfileOverlay({ onClose, activeBrand: activeBrandProp, onBrandChange, 
           padding: 12, display: 'flex', flexDirection: 'column', gap: 8,
         }}>
           <SettingsRow label="Password" value="CHANGE" />
-          <SettingsRow label="Language" value="ENGLISH" />
           <SettingsRow label="Licenses" value="SHOW" />
         </div>
 
@@ -513,6 +512,191 @@ function ProfileButton({ children, primary, disabled, onClick }) {
     >
       {children}
     </button>
+  );
+}
+
+// ─── System Settings overlay ─────────────────────────────────────────────────
+function SysRow({ label, value, variant }) {
+  const [hovered, setHovered] = useState(false);
+  const valueColor =
+    variant === 'on'   ? '#4cd87a' :
+    variant === 'off'  ? 'rgba(128,176,200,0.4)' :
+    variant === 'warn' ? '#f0c040' :
+    '#80b0c8';
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 16,
+        height: 32, padding: '0 12px', borderRadius: 6,
+        background: hovered ? 'rgba(0,70,102,0.38)' : 'rgba(0,70,102,0.24)',
+        cursor: 'pointer', transition: 'background 0.15s',
+      }}
+    >
+      <span style={{
+        flex: 1, fontSize: 12, fontWeight: 500,
+        color: hovered ? '#ffffff' : 'rgba(204,223,233,0.85)',
+        fontFamily: "'Inter', sans-serif",
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        transition: 'color 0.15s',
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontSize: 10, fontWeight: 700, color: valueColor,
+        fontFamily: "'Inter', sans-serif",
+        letterSpacing: 1.1, textTransform: 'uppercase', flexShrink: 0,
+        transition: 'color 0.15s',
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function SysSection({ label }) {
+  return (
+    <div style={{
+      fontSize: 9, fontWeight: 700, color: 'rgba(128,176,200,0.5)',
+      fontFamily: "'Inter', sans-serif", letterSpacing: 1.8,
+      textTransform: 'uppercase', paddingLeft: 4,
+      marginBottom: 4, marginTop: 4,
+    }}>
+      {label}
+    </div>
+  );
+}
+
+function SystemSettingsOverlay({ onClose }) {
+  const [closing, setClosing] = useState(false);
+  function handleClose() { setClosing(true); }
+
+  return (
+    <>
+      <div onClick={handleClose} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+      <div
+        onAnimationEnd={() => { if (closing) onClose(); }}
+        style={{
+          position: 'fixed',
+          left: 120,
+          bottom: 24,
+          width: 316,
+          maxHeight: 'calc(100vh - 48px)',
+          background: 'rgba(1,45,66,0.82)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid #153f53',
+          borderRadius: 24,
+          boxShadow: '0px 0px 12px 0px rgba(0,0,0,0.24)',
+          animation: closing ? 'profileFadeOut 0.18s ease forwards' : 'profileFadeIn 0.22s ease',
+          display: 'flex', flexDirection: 'column',
+          zIndex: 100,
+          boxSizing: 'border-box',
+          overflow: 'visible',
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 20px 14px', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <span style={{
+            fontSize: 15, fontWeight: 700, color: '#fff',
+            fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.3,
+          }}>
+            System Settings
+          </span>
+          <CloseButton onClose={handleClose} />
+        </div>
+
+        {/* Scrollable body */}
+        <div style={{
+          overflowY: 'auto', padding: '0 20px 24px',
+          display: 'flex', flexDirection: 'column', gap: 16,
+          minHeight: 0, borderRadius: '0 0 24px 24px',
+        }}>
+
+          {/* General */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="General" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Interface Language" value="English" />
+              <SysRow label="Date Format" value="DD/MM/YYYY" />
+              <SysRow label="Timezone" value="CET +1" />
+              <SysRow label="Auto-logout Timeout" value="30 min" />
+            </div>
+          </div>
+
+          {/* Campaigns */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="Campaigns" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Default Rollout Strategy" value="Staged" />
+              <SysRow label="Require Approval" variant="on" value="Yes" />
+              <SysRow label="Max Concurrent Campaigns" value="10" />
+              <SysRow label="Failure Threshold" variant="warn" value="5%" />
+            </div>
+          </div>
+
+          {/* Data & Import */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="Data & Import" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Auto-sync Interval" value="6 h" />
+              <SysRow label="Import Validation Mode" value="Strict" />
+              <SysRow label="Data Retention Period" value="90 days" />
+              <SysRow label="Archive on Completion" variant="on" value="On" />
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="Notifications" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Email Notifications" variant="on" value="On" />
+              <SysRow label="Campaign Alerts" value="All" />
+              <SysRow label="System Alerts" variant="warn" value="Critical" />
+              <SysRow label="Digest Frequency" value="Daily" />
+            </div>
+          </div>
+
+          {/* Security */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="Security" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Two-Factor Authentication" variant="on" value="On" />
+              <SysRow label="Session Timeout" value="60 min" />
+              <SysRow label="Audit Logging" value="Full" />
+              <SysRow label="IP Whitelist" variant="off" value="Off" />
+            </div>
+          </div>
+
+          {/* Performance */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="Performance" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Cache TTL" value="5 min" />
+              <SysRow label="Request Timeout" value="30 s" />
+              <SysRow label="Batch Size Limit" value="5 000" />
+              <SysRow label="Real-time Updates" variant="on" value="On" />
+            </div>
+          </div>
+
+          {/* System */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <SysSection label="System" />
+            <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 12, padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <SysRow label="Version" value="4.2.1" />
+              <SysRow label="Environment" value="Production" />
+              <SysRow label="API Region" value="EU-West" />
+              <SysRow label="Maintenance Mode" variant="off" value="Off" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -784,8 +968,8 @@ function DataImportOverlay({ onClose, onScheduled }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <span style={{
-            fontSize: 20, fontWeight: 600, color: '#ffffff',
-            fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.4,
+            fontSize: 15, fontWeight: 700, color: '#ffffff',
+            fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.3,
           }}>
             Scheduled Updates
           </span>
@@ -905,7 +1089,7 @@ function AvatarButton({ profileOpen, onClick }) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          width: 40, height: 40, borderRadius: 10,
+          width: 48, height: 48, borderRadius: 12,
           background: profileOpen || hovered ? '#005a80' : '#004666',
           border: profileOpen ? '2px solid #28779c' : '2px solid transparent',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -987,10 +1171,413 @@ function ScheduleToast({ onDone }) {
   );
 }
 
-export default function Sidebar({ activeNav, onNavChange, attentionCount, testAttentionCount, activeBrand, onBrandChange, onLogout }) {
+// ─── Toast config & Q-key pool ───────────────────────────────────────────────
+const TOAST_CFG = {
+  success: { bg:'rgba(10,40,18,0.88)',  border:'rgba(40,140,80,0.45)',  shadow:'rgba(40,140,80,0.12)',  title:'#4cd87a', desc:'rgba(56,176,96,0.7)',   iconBg:'rgba(40,140,80,0.25)',  iconBorder:'rgba(56,176,96,0.4)',   iconColor:'#4cd87a' },
+  info:    { bg:'rgba(0,28,50,0.88)',   border:'rgba(40,119,156,0.45)', shadow:'rgba(40,119,156,0.12)', title:'#5bc8f0', desc:'rgba(40,160,200,0.7)',  iconBg:'rgba(40,119,156,0.25)', iconBorder:'rgba(40,160,200,0.4)', iconColor:'#5bc8f0' },
+  warning: { bg:'rgba(38,28,4,0.88)',  border:'rgba(200,155,35,0.45)', shadow:'rgba(200,155,35,0.12)', title:'#f0c040', desc:'rgba(200,155,35,0.7)',  iconBg:'rgba(200,155,35,0.25)', iconBorder:'rgba(200,155,35,0.4)', iconColor:'#f0c040' },
+  error:   { bg:'rgba(40,8,8,0.88)',   border:'rgba(180,40,40,0.45)',  shadow:'rgba(180,40,40,0.12)',  title:'#f05858', desc:'rgba(180,60,60,0.7)',   iconBg:'rgba(180,40,40,0.25)',  iconBorder:'rgba(200,60,60,0.4)',  iconColor:'#f05858' },
+};
+const Q_POOL = [
+  { toastType:'info',    notifType:'campaign_status',     status:'RUNNING',   title:'Statistics Refreshed',      desc:'Campaign statistics updated for all active regions.',                          campaignId:1,   campaignName:'Middle Europe Critical Bug Fix', isTest:false },
+  { toastType:'warning', notifType:'campaign_status',     status:'RUNNING',   title:'Slow Progress Detected',    desc:'Turkey Region Software Patch is progressing slower than expected.',            campaignId:8,   campaignName:'Turkey Region Software Patch',   isTest:false },
+  { toastType:'success', notifType:'campaign_status',     status:'COMPLETED', title:'Campaign Completed',        desc:'Norway ECU Update completed — 1 204 vehicles updated successfully.',            campaignId:27,  campaignName:'UK Fleet Powertrain Update',      isTest:false },
+  { toastType:'error',   notifType:'campaign_status',     status:'FAILED',    title:'Campaign Failed',           desc:'Alpine Region Software Patch failed due to connection timeout.',                campaignId:12,  campaignName:'Alpine Region Software Patch',    isTest:false },
+  { toastType:'info',    notifType:'campaign_test_status',status:'RUNNING',   title:'Test Enrollment Updated',   desc:'Suspension ECU Hotfix Test has enrolled 3 additional vehicles.',               campaignId:112, campaignName:'Suspension ECU Hotfix Test',      isTest:true  },
+  { toastType:'warning', notifType:'campaign_approve',    status:'CREATED',   title:'Approval Deadline Nearing', desc:'Netherlands Critical Hotfix has not been approved in over 48 hours.',          campaignId:31,  campaignName:'Netherlands Critical Hotfix',     isTest:false },
+  { toastType:'success', notifType:'scheduled_update',                        title:'Data Import Completed',     desc:'Scheduled import finished — Seat Q2 2024 data loaded successfully.',            detail:{ brand:'Seat', batch:'Q2 2024', vehicles:'1 847', regions:['Spain','Portugal'], fileRef:'seat_q2_2024.xlsx', ts:'2026-03-12 14:22' } },
+  { toastType:'info',    notifType:'system',                                  title:'System Health Check',       desc:'All services operational. Last check: 2026-03-12 15:00 UTC.' },
+];
+let _qIdCounter = 100;
+function _qNotifIcon(toastType) {
+  const c = TOAST_CFG[toastType]?.iconColor || '#5bc8f0';
+  if (toastType === 'success') return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>;
+  if (toastType === 'error')   return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+  if (toastType === 'warning') return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+}
+function NotifToast({ type, title, desc, onDone }) {
+  const [hiding, setHiding] = useState(false);
+  const cfg = TOAST_CFG[type] || TOAST_CFG.info;
+  useEffect(() => {
+    const t1 = setTimeout(() => setHiding(true), 3200);
+    const t2 = setTimeout(() => onDone(), 3600);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+  return (
+    <div
+      onAnimationEnd={() => { if (hiding) onDone(); }}
+      style={{
+        position: 'fixed', top: 20, right: 20, zIndex: 999,
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '12px 16px', borderRadius: 12,
+        background: cfg.bg,
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        border: `1px solid ${cfg.border}`,
+        boxShadow: `0 4px 16px rgba(0,0,0,0.32), 0 0 0 1px ${cfg.shadow}`,
+        animation: hiding ? 'toastSlideOut 0.32s ease forwards' : 'toastSlideIn 0.28s ease forwards',
+        pointerEvents: 'none',
+        maxWidth: 280,
+      }}
+    >
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+        background: cfg.iconBg, border: `1px solid ${cfg.iconBorder}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {_qNotifIcon(type)}
+      </div>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: cfg.title, fontFamily: "'Inter', sans-serif", letterSpacing: 0.3 }}>
+          {title}
+        </div>
+        <div style={{ fontSize: 10, fontWeight: 500, color: cfg.desc, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+          {desc}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Notifications data ──────────────────────────────────────────────────────
+const NOTIF_RAW = [
+  { id:1,  type:'campaign_approve',      status:'CREATED',    unread:true,  title:'Approval Required',        desc:'Middle Europe Critical Bug Fix is waiting for your approval before launch.',                          time:'2 min ago',   campaignId:1,   campaignName:'Middle Europe Critical Bug Fix',    isTest:false },
+  { id:2,  type:'campaign_status',       status:'COMPLETED',  unread:true,  title:'Campaign Completed',       desc:'US West Coast Fleet Update completed successfully — 85 365 vehicles updated.',                        time:'18 min ago',  campaignId:15,  campaignName:'US West Coast Fleet Update',        isTest:false },
+  { id:3,  type:'scheduled_update',                           unread:true,  title:'Scheduled Data Loaded',    desc:'VW fleet batch (March 2024) imported — 4 382 vehicles updated across 3 regions.',                     time:'1 hr ago',    detail:{ brand:'VW',     batch:'March 2024',      vehicles:'4 382', regions:['Middle Europe','North Europe','Germany'],                              fileRef:'vw_fleet_march2024.xlsx',  ts:'2026-03-12 09:14' } },
+  { id:4,  type:'campaign_test_status',  status:'FAILED',     unread:true,  title:'Test Campaign Failed',     desc:'Gateway Protocol Stress Test failed at 62% — 61 of 99 vehicles updated.',                              time:'2 hr ago',    campaignId:103, campaignName:'Gateway Protocol Stress Test',     isTest:true  },
+  { id:5,  type:'campaign_status',       status:'FAILED',                   title:'Campaign Failed',          desc:'Vietnam Fleet Drivetrain Fix encountered critical errors and was aborted.',                           time:'4 hr ago',    campaignId:35,  campaignName:'Vietnam Fleet Drivetrain Fix',      isTest:false },
+  { id:6,  type:'campaign_status',       status:'RUNNING',                  title:'Campaign Started',         desc:'North America Software Update is now running on 462 vehicles.',                                       time:'5 hr ago',    campaignId:4,   campaignName:'North America Software Update',     isTest:false },
+  { id:7,  type:'scheduled_update',                                         title:'Data Sync Completed',      desc:'Skoda fleet synchronization completed — 1 243 records refreshed.',                                    time:'6 hr ago',    detail:{ brand:'Skoda',  batch:'Q1 2024',         vehicles:'1 243', regions:['Czech Republic','Slovakia'],                                       fileRef:'skoda_q1_2024.xlsx',       ts:'2026-03-12 06:30' } },
+  { id:8,  type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'Baltic Region Brake Calibration completed — 5 756 vehicles updated.',                                time:'7 hr ago',    campaignId:10,  campaignName:'Baltic Region Brake Calibration',   isTest:false },
+  { id:9,  type:'campaign_test_status',  status:'COMPLETED',                title:'Test Campaign Completed',  desc:'Brake Module Alpha Test passed all 42 test vehicles without errors.',                                 time:'8 hr ago',    campaignId:102, campaignName:'Brake Module Alpha Test',          isTest:true  },
+  { id:10, type:'campaign_approve',      status:'CREATED',                  title:'Approval Required',        desc:'Middle East Fleet Diagnostic (CREATED) is pending your review and approval.',                        time:'9 hr ago',    campaignId:3,   campaignName:'Middle East Fleet Diagnostic',     isTest:false },
+  { id:11, type:'scheduled_update',                                         title:'Scheduled Data Imported',  desc:'Ford vehicle data (Q4 2023) batch import completed — 2 118 new records.',                            time:'Yesterday',   detail:{ brand:'Ford',   batch:'Q4 2023',         vehicles:'2 118', regions:['UK','Ireland','Western Europe'],                                   fileRef:'ford_q4_2023.xlsx',        ts:'2026-03-11 22:05' } },
+  { id:12, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Started',         desc:'DACH Region Critical Hotfix started rolling out to 253 vehicles.',                                   time:'Yesterday',   campaignId:14,  campaignName:'DACH Region Critical Hotfix',       isTest:false },
+  { id:13, type:'campaign_test_status',  status:'RUNNING',                  title:'Test Campaign Started',    desc:'HVAC Control Unit Test is now running — 91 test vehicles enrolled.',                                 time:'Yesterday',   campaignId:109, campaignName:'HVAC Control Unit Test',           isTest:true  },
+  { id:14, type:'campaign_status',       status:'FAILED',                   title:'Campaign Failed',          desc:'Poland Regional Drive Fix failed — rollback initiated on 3 241 vehicles.',                           time:'Yesterday',   campaignId:26,  campaignName:'Poland Regional Drive Fix',         isTest:false },
+  { id:15, type:'scheduled_update',                                         title:'Fleet Database Refreshed', desc:'Audi fleet database refreshed — 6 741 records updated with latest telemetry.',                       time:'Yesterday',   detail:{ brand:'Audi',   batch:'Feb 2024',        vehicles:'6 741', regions:['Germany','Austria','Switzerland'],                                 fileRef:'audi_feb2024.xlsx',        ts:'2026-03-11 14:48' } },
+  { id:16, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'Japan Region ECU Full Update — 12 345 vehicles successfully updated.',                               time:'2 days ago',  campaignId:24,  campaignName:'Japan Region ECU Full Update',      isTest:false },
+  { id:17, type:'system',                                                   title:'Maintenance Scheduled',    desc:'System maintenance on 2026-03-14 02:00–04:00 UTC. No service interruption expected.',                 time:'2 days ago'  },
+  { id:18, type:'campaign_test_status',  status:'COMPLETED',                title:'Test Campaign Completed',  desc:'Display Module Canary Test finished — 64/64 vehicles passed QA checks.',                              time:'2 days ago',  campaignId:108, campaignName:'Display Module Canary Test',       isTest:true  },
+  { id:19, type:'campaign_approve',      status:'CREATED',                  title:'Approval Required',        desc:'Netherlands Critical Hotfix (CREATED) has been submitted for your sign-off.',                        time:'2 days ago',  campaignId:31,  campaignName:'Netherlands Critical Hotfix',       isTest:false },
+  { id:20, type:'scheduled_update',                                         title:'Fleet Records Imported',   desc:'Volvo Q1 2024 fleet records imported — 8 904 vehicles across 4 markets.',                            time:'2 days ago',  detail:{ brand:'Volvo',  batch:'Q1 2024',         vehicles:'8 904', regions:['Sweden','Norway','Finland','Denmark'],                             fileRef:'volvo_q1_2024.xlsx',       ts:'2026-03-10 18:22' } },
+  { id:21, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Resumed',         desc:'China North Gateway Patch resumed after a 12-hour pause — 18 492 vehicles.',                         time:'3 days ago',  campaignId:30,  campaignName:'China North Gateway Patch',         isTest:false },
+  { id:22, type:'campaign_test_status',  status:'FAILED',                   title:'Test Campaign Failed',     desc:'Charging System Regression failed — firmware incompatibility detected.',                              time:'3 days ago',  campaignId:107, campaignName:'Charging System Regression',        isTest:true  },
+  { id:23, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'France Region Software Patch completed with a 98.8% success rate.',                                   time:'3 days ago',  campaignId:21,  campaignName:'France Region Software Patch',      isTest:false },
+  { id:24, type:'scheduled_update',                                         title:'Vehicle Records Updated',  desc:'Seat vehicle records refreshed — 3 327 entries updated with mileage data.',                          time:'3 days ago',  detail:{ brand:'Seat',   batch:'Q4 2023',         vehicles:'3 327', regions:['Spain','Portugal'],                                               fileRef:'seat_q4_2023.xlsx',        ts:'2026-03-09 11:10' } },
+  { id:25, type:'system',                                                   title:'Maintenance Completed',    desc:'Scheduled maintenance completed ahead of schedule. All systems nominal.',                             time:'3 days ago'  },
+  { id:26, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Running',         desc:'UK Fleet Powertrain Update actively distributing to 47 821 vehicles.',                               time:'4 days ago',  campaignId:27,  campaignName:'UK Fleet Powertrain Update',         isTest:false },
+  { id:27, type:'campaign_test_status',  status:'RUNNING',                  title:'Test Campaign Started',    desc:'Drive Unit OTA Smoke Test started — 75 vehicles enrolled for validation.',                           time:'4 days ago',  campaignId:106, campaignName:'Drive Unit OTA Smoke Test',         isTest:true  },
+  { id:28, type:'campaign_approve',      status:'CREATED',                  title:'Approval Required',        desc:'Eastern Europe Drivetrain Fix (CREATED) is ready for your approval.',                                time:'4 days ago',  campaignId:20,  campaignName:'Eastern Europe Drivetrain Fix',     isTest:false },
+  { id:29, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'India South ECU Calibration completed — 9 304 vehicles updated.',                                   time:'4 days ago',  campaignId:32,  campaignName:'India South ECU Calibration',       isTest:false },
+  { id:30, type:'scheduled_update',                                         title:'Batch Import Completed',   desc:'VW batch January 2024 — 9 412 vehicles, 14 regions synchronized.',                                  time:'5 days ago',  detail:{ brand:'VW',     batch:'January 2024',    vehicles:'9 412', regions:['Germany','Austria','Poland','Czech Republic','+10 regions'],       fileRef:'vw_fleet_jan2024.xlsx',    ts:'2026-03-07 08:00' } },
+  { id:31, type:'campaign_test_status',  status:'COMPLETED',                title:'Test Campaign Completed',  desc:'ABS System Integration Test — 33 vehicles passed full validation.',                                   time:'5 days ago',  campaignId:105, campaignName:'ABS System Integration Test',       isTest:true  },
+  { id:32, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Started',         desc:'Southeast Asia Software Full began deployment on 754 vehicles.',                                     time:'5 days ago',  campaignId:17,  campaignName:'Southeast Asia Software Full',      isTest:false },
+  { id:33, type:'system',                                                   title:'Release Notes Available',  desc:'ITERU Pro v4.2 is available — batch import improvements, enhanced failure analytics.',                 time:'5 days ago'  },
+  { id:34, type:'scheduled_update',                                         title:'Data Synchronized',        desc:'Skoda Q1 fleet synchronized — 2 889 vehicles across 5 markets.',                                    time:'6 days ago',  detail:{ brand:'Skoda',  batch:'Q1 2024 (2nd sync)', vehicles:'2 889', regions:['Czech Republic','Slovakia','Poland','Hungary','Romania'],          fileRef:'skoda_q1_sync2.xlsx',      ts:'2026-03-06 15:30' } },
+  { id:35, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'South Korea Brake Module Fix — 2 067 vehicles, 100% success rate.',                                  time:'6 days ago',  campaignId:28,  campaignName:'South Korea Brake Module Fix',      isTest:false },
+  { id:36, type:'campaign_test_status',  status:'FAILED',                   title:'Test Campaign Failed',     desc:'Battery Management Pilot failed — BMS firmware incompatibility on 12 vehicles.',                    time:'7 days ago',  campaignId:110, campaignName:'Battery Management Pilot',          isTest:true  },
+];
+
+function notifColor(n) {
+  if (n.type === 'campaign_approve')    return '#c8a028';
+  if (n.type === 'system')             return '#607890';
+  if (n.type === 'scheduled_update')   return '#28c0b0';
+  if (n.status === 'COMPLETED')        return '#38b060';
+  if (n.status === 'FAILED')           return '#cc3333';
+  return '#28a0c8';
+}
+
+function NotifIcon({ n }) {
+  const c = notifColor(n);
+  const p = { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:c, strokeWidth:'2.5', strokeLinecap:'round', strokeLinejoin:'round' };
+  if (n.type === 'campaign_approve') return <svg {...p}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+  if (n.type === 'scheduled_update') return <svg {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>;
+  if (n.type === 'system')           return <svg {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+  if (n.status === 'COMPLETED')      return <svg {...p}><polyline points="20 6 9 17 4 12"/></svg>;
+  if (n.status === 'FAILED')         return <svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+  return <svg width="12" height="12" viewBox="0 0 24 24" fill={c}><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+}
+
+function NotifItem({ notif, onCampaignClick, onScheduledClick }) {
+  const [hovered, setHovered] = useState(false);
+  const isCampaign  = notif.type === 'campaign_status' || notif.type === 'campaign_test_status' || notif.type === 'campaign_approve';
+  const isScheduled = notif.type === 'scheduled_update';
+  const isClickable = isCampaign || isScheduled;
+  const c = notifColor(notif);
+
+  function handleClick() {
+    if (isCampaign)  onCampaignClick();
+    else if (isScheduled) onScheduledClick();
+  }
+
+  return (
+    <div
+      onClick={handleClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 10,
+        padding: '10px 16px 10px 16px',
+        cursor: isClickable ? 'pointer' : 'default',
+        background: hovered && isClickable ? 'rgba(0,70,102,0.22)' : notif.unread ? 'rgba(40,119,156,0.07)' : 'transparent',
+        transition: 'background 0.12s',
+        position: 'relative',
+        borderLeft: notif.unread ? '3px solid rgba(40,150,200,0.55)' : '3px solid transparent',
+      }}
+    >
+      {/* Icon */}
+      <div style={{ width:28, height:28, borderRadius:8, flexShrink:0, marginTop:1,
+        background:`${c}1a`, border:`1px solid ${c}33`,
+        display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <NotifIcon n={notif} />
+      </div>
+      {/* Content */}
+      <div style={{ flex:1, minWidth:0 }}>
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:6 }}>
+          <span style={{ fontSize:12, fontWeight: notif.unread ? 700 : 500,
+            color: notif.unread ? '#ccdfe9' : 'rgba(204,223,233,0.72)',
+            fontFamily:"'Inter', sans-serif", lineHeight:1.3 }}>
+            {notif.title}
+          </span>
+          <span style={{ fontSize:9, fontWeight:500, color:'rgba(128,176,200,0.45)',
+            fontFamily:"'Inter', sans-serif", whiteSpace:'nowrap', flexShrink:0, marginTop:2 }}>
+            {notif.time}
+          </span>
+        </div>
+        <span style={{ fontSize:11, color:'rgba(128,176,200,0.6)',
+          fontFamily:"'Inter', sans-serif", lineHeight:1.45, display:'block', marginTop:3 }}>
+          {notif.desc}
+        </span>
+        {isClickable && (
+          <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:6,
+            opacity: hovered ? 1 : 0.45, transition:'opacity 0.12s' }}>
+            <span style={{ fontSize:9, fontWeight:700, color:c,
+              fontFamily:"'Inter', sans-serif", letterSpacing:0.6 }}>
+              {isCampaign ? (notif.isTest ? 'VIEW TEST CAMPAIGN' : 'VIEW CAMPAIGN') : 'VIEW DETAILS'}
+            </span>
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NotifDetailModal({ detail, onClose }) {
+  const [closing, setClosing] = useState(false);
+  function handleClose() { setClosing(true); }
+  return (
+    <>
+      <div onClick={handleClose} style={{
+        position:'fixed', inset:0, zIndex:310,
+        background:'rgba(0,20,35,0.55)',
+        backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)',
+        animation: closing ? 'backdropFadeOut 0.22s ease forwards' : 'backdropFadeIn 0.22s ease',
+      }} />
+      <div
+        onAnimationEnd={() => { if (closing) onClose(); }}
+        style={{
+          position:'fixed', top:'50%', left:'50%',
+          transform:'translate(-50%,-50%)',
+          width:400, zIndex:311,
+          background:'rgba(1,45,66,0.96)',
+          backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)',
+          border:'1px solid #153f53', borderRadius:20,
+          padding:'28px 28px 24px',
+          display:'flex', flexDirection:'column', gap:20,
+          animation: closing ? 'modalFadeOut 0.22s ease forwards' : 'modalFadeIn 0.22s ease',
+          boxShadow:'0px 24px 64px rgba(0,0,0,0.56)',
+        }}
+      >
+        <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between' }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700, color:'#fff',
+              fontFamily:"'Montserrat', sans-serif", letterSpacing:0.3 }}>
+              Import Details
+            </div>
+            <div style={{ fontSize:11, color:'rgba(128,176,200,0.65)',
+              fontFamily:"'Inter', sans-serif", marginTop:3 }}>
+              Scheduled Update — {detail.brand}
+            </div>
+          </div>
+          <CloseButton onClose={handleClose} />
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {[['Brand', detail.brand], ['Batch', detail.batch], ['Vehicles Updated', detail.vehicles],
+            ['Source File', detail.fileRef], ['Timestamp', detail.ts]].map(([label, value]) => (
+            <div key={label} style={{ display:'flex', alignItems:'center', gap:12,
+              padding:'8px 12px', borderRadius:8, background:'rgba(0,70,102,0.2)' }}>
+              <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)',
+                fontFamily:"'Inter', sans-serif", letterSpacing:0.8, width:120, flexShrink:0 }}>
+                {label.toUpperCase()}
+              </span>
+              <span style={{ fontSize:12, fontWeight:500, color:'#ccdfe9',
+                fontFamily:"'Inter', sans-serif" }}>
+                {value}
+              </span>
+            </div>
+          ))}
+          <div style={{ padding:'8px 12px', borderRadius:8, background:'rgba(0,70,102,0.2)' }}>
+            <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)',
+              fontFamily:"'Inter', sans-serif", letterSpacing:0.8, display:'block', marginBottom:8 }}>
+              REGIONS
+            </span>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+              {detail.regions.map(r => (
+                <span key={r} style={{ fontSize:10, fontWeight:600, color:'#80b0c8',
+                  fontFamily:"'Inter', sans-serif",
+                  padding:'2px 8px', borderRadius:4,
+                  background:'rgba(40,119,156,0.18)', border:'1px solid rgba(40,119,156,0.3)' }}>
+                  {r}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div style={{ display:'flex', justifyContent:'flex-end' }}>
+          <ProfileButton primary onClick={handleClose}>Close</ProfileButton>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function NotificationsOverlay({ notifications, onClose, onMarkAllRead, onMarkRead, onOpenCampaign }) {
+  const [closing, setClosing] = useState(false);
+  const [detailModal, setDetailModal] = useState(null);
+  const pendingAction = useRef(null);
+  const unread = notifications.filter(n => n.unread).length;
+
+  function handleClose() { setClosing(true); }
+
+  function handleAnimEnd() {
+    if (!closing) return;
+    onClose();
+    if (pendingAction.current) { pendingAction.current(); pendingAction.current = null; }
+  }
+
+  function handleCampaignClick(n) {
+    onMarkRead(n.id);
+    if (onOpenCampaign) {
+      pendingAction.current = () => onOpenCampaign(n.campaignId, n.isTest);
+    }
+    setClosing(true);
+  }
+
+  function handleScheduledClick(n) {
+    onMarkRead(n.id);
+    setDetailModal(n.detail);
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={handleClose} style={{ position:'fixed', inset:0, zIndex:99 }} />
+
+      {/* Panel */}
+      <div
+        onAnimationEnd={handleAnimEnd}
+        style={{
+          position:'fixed', left:120, top:24, bottom:24,
+          width:340,
+          background:'rgba(1,45,66,0.82)',
+          backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+          border:'1px solid #153f53', borderRadius:24,
+          boxShadow:'0px 0px 24px rgba(0,0,0,0.32)',
+          animation: closing ? 'profileFadeOut 0.18s ease forwards' : 'profileFadeIn 0.22s ease',
+          display:'flex', flexDirection:'column',
+          zIndex:100, overflow:'visible', boxSizing:'border-box',
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding:'20px 20px 14px', flexShrink:0 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom: unread > 0 ? 10 : 0 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontSize:15, fontWeight:700, color:'#fff',
+                fontFamily:"'Montserrat', sans-serif", letterSpacing:0.3 }}>
+                Notifications
+              </span>
+            </div>
+            <CloseButton onClose={handleClose} />
+          </div>
+          {unread > 0 && (
+            <button
+              onClick={onMarkAllRead}
+              style={{ background:'none', border:'none', cursor:'pointer',
+                fontSize:10, fontWeight:600, color:'rgba(128,176,200,0.6)',
+                fontFamily:"'Inter', sans-serif", letterSpacing:0.4,
+                padding:0, transition:'color 0.15s' }}
+              onMouseEnter={e => e.currentTarget.style.color='rgba(128,176,200,0.9)'}
+              onMouseLeave={e => e.currentTarget.style.color='rgba(128,176,200,0.6)'}
+            >
+              Mark all as read
+            </button>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div style={{ height:1, background:'rgba(255,255,255,0.07)', flexShrink:0 }} />
+
+        {/* Scrollable list */}
+        <div style={{ flex:1, overflowY:'auto', paddingTop:4, paddingBottom:8, borderRadius:'0 0 24px 24px' }}>
+          {notifications.map(n => (
+            <NotifItem
+              key={n.id}
+              notif={n}
+              onCampaignClick={() => handleCampaignClick(n)}
+              onScheduledClick={() => handleScheduledClick(n)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {detailModal && <NotifDetailModal detail={detailModal} onClose={() => setDetailModal(null)} />}
+    </>
+  );
+}
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+export default function Sidebar({ activeNav, onNavChange, attentionCount, testAttentionCount, activeBrand, onBrandChange, onLogout, onOpenCampaign }) {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [systemSettingsOpen, setSystemSettingsOpen] = useState(false);
   const [dataImportOpen, setDataImportOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState(NOTIF_RAW);
+  const unreadCount = notifications.filter(n => n.unread).length;
+  const [qToast, setQToast] = useState(null);
+  const qIndexRef = useRef(0);
+
+  useEffect(() => {
+    function handleKey(e) {
+      if (e.key !== 'q' && e.key !== 'Q') return;
+      const tag = (e.target?.tagName || '').toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const pool = Q_POOL[qIndexRef.current % Q_POOL.length];
+      qIndexRef.current += 1;
+      const newId = ++_qIdCounter;
+      const newNotif = {
+        id: newId,
+        type: pool.notifType,
+        status: pool.status,
+        unread: true,
+        title: pool.title,
+        desc: pool.desc,
+        time: 'Just now',
+        campaignId: pool.campaignId,
+        campaignName: pool.campaignName,
+        isTest: pool.isTest,
+        detail: pool.detail,
+      };
+      setNotifications(ns => [newNotif, ...ns]);
+      setQToast({ id: newId, type: pool.toastType, title: pool.title, desc: pool.desc });
+    }
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   return (
     <>
@@ -1044,7 +1631,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
         <Divider />
 
-        <NavIcon icon={<BellIcon />} active={activeNav === 'bell'} badge={1} label="Notifications" onClick={() => onNavChange('bell')} />
+        <NavIcon icon={<BellIcon />} active={notifOpen} badge={unreadCount > 0 ? unreadCount : undefined} label="Notifications" onClick={() => setNotifOpen(o => !o)} />
         <NavIcon icon={<CalendarIcon />} active={dataImportOpen} label="Scheduled Updates" onClick={() => setDataImportOpen(o => !o)} />
 
         {/* Spacer */}
@@ -1052,7 +1639,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
         <Divider />
 
-        <NavIcon icon={<SlidersIcon />} label="System Settings" onClick={() => {}} />
+        <NavIcon icon={<SlidersIcon />} active={systemSettingsOpen} label="System Settings" onClick={() => setSystemSettingsOpen(o => !o)} />
 
         {/* Avatar */}
         <div style={{
@@ -1063,9 +1650,20 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
         </div>
       </div>
 
+      {systemSettingsOpen && <SystemSettingsOverlay onClose={() => setSystemSettingsOpen(false)} />}
       {profileOpen && <ProfileOverlay onClose={() => setProfileOpen(false)} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />}
       {dataImportOpen && <DataImportOverlay onClose={() => setDataImportOpen(false)} onScheduled={() => { setDataImportOpen(false); setShowToast(true); }} />}
       {showToast && <ScheduleToast onDone={() => setShowToast(false)} />}
+      {qToast && <NotifToast key={qToast.id} type={qToast.type} title={qToast.title} desc={qToast.desc} onDone={() => setQToast(null)} />}
+      {notifOpen && (
+        <NotificationsOverlay
+          notifications={notifications}
+          onClose={() => setNotifOpen(false)}
+          onMarkAllRead={() => setNotifications(ns => ns.map(n => ({ ...n, unread: false })))}
+          onMarkRead={id => setNotifications(ns => ns.map(n => n.id === id ? { ...n, unread: false } : n))}
+          onOpenCampaign={onOpenCampaign}
+        />
+      )}
     </>
   );
 }

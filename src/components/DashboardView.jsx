@@ -79,7 +79,6 @@ const TABS_TOP = [
 const TABS_BOTTOM = [
   { id: 'CAMPAIGNS',  label: 'CAMPAIGNS',  tooltip: 'New Campaign' },
   { id: 'CRITERIONS', label: 'VARIABLES', tooltip: 'New Variable' },
-  { id: 'VEHICLES',   label: 'VEHICLES',   tooltip: 'New Vehicle' },
 ];
 
 const COLUMNS = [
@@ -447,6 +446,11 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     triggerBackLoader(nav === 'people' ? 'Loading Tests' : 'Returning to dashboard', () => setActiveNav(nav));
   }
 
+  function handleSidebarNavChange(nav) {
+    if (nav === activeNav) return;
+    triggerBackLoader(nav === 'people' ? 'Loading Tests' : 'Loading Production', () => setActiveNav(nav));
+  }
+
   if (activeNav === 'people') {
     return <TestUpdatesView activeNav={activeNav} onNavChange={setActiveNav} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />;
   }
@@ -606,7 +610,12 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
       {/* ── Sidebar ── */}
-      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} attentionCount={TAB_TOTAL.attention} testAttentionCount={5} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout} />
+      <Sidebar activeNav={activeNav} onNavChange={handleSidebarNavChange} attentionCount={TAB_TOTAL.attention} testAttentionCount={5} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout}
+        onOpenCampaign={(campaignId, isTest) => {
+          if (isTest) { handleSidebarNavChange('people'); }
+          else { const c = CAMPAIGNS.find(x => x.id === campaignId); if (c) handleCampaignOpen(c); }
+        }}
+      />
 
       {/* ── Main area ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0, position: 'relative' }}>
