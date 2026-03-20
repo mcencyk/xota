@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Sidebar from './Sidebar';
 import CampaignDetailView from './CampaignDetailView';
+import VehicleDetailView from './VehicleDetailView';
 
 // ─── Status config (only valid test statuses) ─────────────────────────────────
 const STATUS = {
@@ -56,6 +57,67 @@ const TABS_BOTTOM = [
   { id: 'VEHICLES',  label: 'VEHICLES',  tooltip: 'New Vehicle'       },
 ];
 
+const BRAND_MODELS = {
+  vw:    ['ID.3', 'ID.4', 'ID.4 GTX', 'ID.5', 'ID.7', 'Golf 8', 'Passat B9', 'Tiguan'],
+  audi:  ['A3', 'A4 TFSI', 'A5', 'A6', 'Q3', 'Q4 e-tron', 'Q5', 'Q8 e-tron'],
+  ford:  ['Focus', 'Mustang Mach-E', 'Puma ST', 'Kuga PHEV', 'Explorer PHEV', 'Transit Custom'],
+  seat:  ['Ibiza FR', 'Leon e-Hybrid', 'Arona', 'Ateca', 'Tarraco'],
+  skoda: ['Octavia iV', 'Superb iV', 'Fabia', 'Kamiq', 'Karoq', 'Kodiaq', 'Enyaq iV'],
+  volvo: ['XC40 Recharge', 'XC60 T8', 'XC90 B5', 'V60 CC', 'C40 Recharge', 'S60 Recharge'],
+};
+const VEH_SW   = ['v2.4.1','v2.8.3','v3.0.0','v3.1.2','v3.2.4','v4.0.0','v4.1.1','v4.2.0'];
+const VEH_CHIP = ['ECU-MQB-4.1','ECU-MQB-4.2','BMS-v2.0','BMS-v2.1','GW-1.4','GW-2.0','HVAC-3.1','NAV-2.5'];
+
+function mkRng(seed) {
+  let s = seed >>> 0;
+  return () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 0x100000000; };
+}
+
+function generateLabVehicles(brandId = 'vw') {
+  const seed = brandId.split('').reduce((acc, c) => acc * 31 + c.charCodeAt(0), 7) & 0x7fffffff;
+  const rng = mkRng(seed);
+  const models = BRAND_MODELS[brandId] || BRAND_MODELS.vw;
+  const CHARS = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+  return Array.from({ length: 100 }, (_, i) => {
+    const vin   = Array.from({ length: 17 }, () => CHARS[Math.floor(rng() * CHARS.length)]).join('');
+    const model = models[Math.floor(rng() * models.length)];
+    const year  = 2023 + Math.floor(rng() * 4);
+    const sw    = VEH_SW[Math.floor(rng() * VEH_SW.length)];
+    const chip  = VEH_CHIP[Math.floor(rng() * VEH_CHIP.length)];
+    const status = rng() > 0.22 ? 'Active' : 'Inactive';
+    return { id: i + 1, vin, model, year, sw, chip, status };
+  });
+}
+
+const VEH_STATUS_CFG = {
+  Active:   { bg: 'rgba(40,140,80,0.2)',   color: '#38b060', dot: '#38b060' },
+  Inactive: { bg: 'rgba(60,80,100,0.22)',  color: '#607890', dot: '#607890' },
+};
+function VehicleStatusBadge({ status }) {
+  const cfg = VEH_STATUS_CFG[status] || VEH_STATUS_CFG.Inactive;
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'2px 8px', borderRadius:99, background:cfg.bg, fontSize:10, fontWeight:700, color:cfg.color, fontFamily:"'Inter',sans-serif", letterSpacing:0.5, whiteSpace:'nowrap' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, flexShrink:0 }} />
+      {status.toUpperCase()}
+    </span>
+  );
+}
+
+const VEH_COLUMNS = [
+  { key: 'vin',    label: 'VIN',              flex: 2.5  },
+  { key: 'model',  label: 'MODEL',            flex: 1.8  },
+  { key: 'year',   label: 'PRODUCTION YEAR',  flex: 1.4  },
+  { key: 'sw',     label: 'SOFTWARE VERSION', flex: 1.5  },
+  { key: 'chip',   label: 'CHIP VERSION',     flex: 1.6  },
+  { key: 'status', label: 'STATUS',           flex: 1.2  },
+];
+
+const VEH_TABS_TOP = [
+  { id: 'all',      label: 'ALL'      },
+  { id: 'active',   label: 'ACTIVE'   },
+  { id: 'inactive', label: 'INACTIVE' },
+];
+
 // No VARIABLE column
 const COLUMNS = [
   { key: 'name',     label: 'CAMPAIGN NAME',       flex: 3   },
@@ -74,6 +136,7 @@ const FILTER_CODES    = ['TC01', 'TC02', 'TC03'];
 
 const LOAD_STEPS_CAMPAIGN = ['Fetching campaign data', 'Loading vehicle statistics', 'Preparing test view'];
 const LOAD_STEPS_BACK     = ['Syncing test results', 'Refreshing campaign list', 'Loading test updates'];
+const LOAD_STEPS_VEHICLE  = ['Fetching vehicle record', 'Loading OTA history', 'Preparing vehicle view'];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -323,7 +386,9 @@ function FilterPanel({ filters, onChange, activeFilterCount }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, onBrandChange, onLogout }) {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [loadingCampaign, setLoadingCampaign] = useState(null);
+  const [loadingVehicle, setLoadingVehicle] = useState(null);
   const [loadingBack, setLoadingBack] = useState(false);
   const [loadStep, setLoadStep] = useState(0);
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -337,6 +402,49 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [hoveredCol, setHoveredCol] = useState(null);
   const [loadSubtitle, setLoadSubtitle] = useState('Returning to Lab');
+
+  const [vehicleTopTab, setVehicleTopTab] = useState('all');
+  const [vehicleSort, setVehicleSort] = useState({ key: 'id', dir: 'asc' });
+  const [vehicleHovCol, setVehicleHovCol] = useState(null);
+
+  const allVehicles = useMemo(() => generateLabVehicles(activeBrand?.id || 'vw'), [activeBrand?.id]);
+
+  const filteredVehicles = useMemo(() => {
+    const sl = searchValue.trim().toLowerCase();
+    return allVehicles
+      .filter(v => {
+        if (vehicleTopTab === 'active')   return v.status === 'Active';
+        if (vehicleTopTab === 'inactive') return v.status === 'Inactive';
+        return true;
+      })
+      .filter(v => !sl || [v.vin, v.model, String(v.year), v.sw, v.chip, v.status].some(f => f.toLowerCase().includes(sl)));
+  }, [allVehicles, vehicleTopTab, searchValue]);
+
+  const sortedVehicles = useMemo(() => {
+    return [...filteredVehicles].sort((a, b) => {
+      const va = String(a[vehicleSort.key] ?? '');
+      const vb = String(b[vehicleSort.key] ?? '');
+      const cmp = va.localeCompare(vb, undefined, { numeric: true });
+      return vehicleSort.dir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredVehicles, vehicleSort]);
+
+  function handleVehicleColSort(key) {
+    setVehicleSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' });
+  }
+
+  const vehActiveCount   = allVehicles.filter(v => v.status === 'Active').length;
+  const vehInactiveCount = allVehicles.filter(v => v.status === 'Inactive').length;
+
+  function handleVehicleOpen(v) {
+    setLoadingVehicle(v);
+    setLoadStep(0);
+    requestAnimationFrame(() => requestAnimationFrame(() => setLoaderVisible(true)));
+    setTimeout(() => setLoadStep(1), 450);
+    setTimeout(() => setLoadStep(2), 900);
+    setTimeout(() => setLoaderVisible(false), 1300);
+    setTimeout(() => { setLoadingVehicle(null); setSelectedVehicle(v); }, 1600);
+  }
 
   function handleCampaignOpen(row) {
     setLoadingCampaign(row);
@@ -367,6 +475,17 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
   function handleExternalNavChange(nav) {
     setSelectedCampaign(null);
     triggerBackLoader(nav === 'aftersales' ? 'Loading Field' : 'Returning to Lab', () => onNavChange(nav));
+  }
+
+  if (selectedVehicle) {
+    return <VehicleDetailView
+      vehicle={selectedVehicle}
+      onBack={() => setSelectedVehicle(null)}
+      onNavChange={nav => { setSelectedVehicle(null); onNavChange(nav); }}
+      activeBrand={activeBrand}
+      onBrandChange={onBrandChange}
+      onLogout={onLogout}
+    />;
   }
 
   if (selectedCampaign) {
@@ -407,6 +526,7 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
 
   if (loadingBack)     return <LoaderScreen steps={LOAD_STEPS_BACK}     subtitle={loadSubtitle} />;
   if (loadingCampaign) return <LoaderScreen steps={LOAD_STEPS_CAMPAIGN} subtitle="Loading campaign" title={loadingCampaign.name} />;
+  if (loadingVehicle)  return <LoaderScreen steps={LOAD_STEPS_VEHICLE}  subtitle="Loading vehicle"  title={loadingVehicle.vin} />;
 
   const searchLower = searchValue.trim().toLowerCase();
   const tabFiltered = TEST_CAMPAIGNS
@@ -475,49 +595,65 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
 
           {/* Top tabs */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {TABS_TOP.map((tab, i) => (
-              <React.Fragment key={tab.id}>
-                {tab.id === 'mine' && <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.15)', marginInline: 4 }} />}
-                <TopTab tab={tab} active={activeTopTab === tab.id} onClick={() => setActiveTopTab(tab.id)} />
-              </React.Fragment>
-            ))}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setFilterOpen(o => !o)}
-                onMouseEnter={() => setFilterHovered(true)}
-                onMouseLeave={() => setFilterHovered(false)}
-                style={{
-                  width: 28, height: 28, borderRadius: 6, border: 'none',
-                  background: filterOpen ? 'rgba(0,50,80,0.65)' : filterHovered ? 'rgba(0,70,102,0.2)' : 'transparent',
-                  color: filterOpen ? '#80d0f0' : filterHovered ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                <FilterIcon />
-                {activeFilterCount > 0 && (
-                  <div style={{
-                    position: 'absolute', top: 0, right: 0, width: 16, height: 16, borderRadius: 8,
-                    background: '#cc4422', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: "'Inter', sans-serif",
-                    boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)', pointerEvents: 'none',
-                  }}>
-                    {activeFilterCount}
-                  </div>
-                )}
-              </button>
-              {filterHovered && !filterOpen && (
-                <div style={{
-                  position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                  marginTop: 4, padding: '3px 8px', borderRadius: 4,
-                  background: '#012d42', border: '1px solid #153f53',
-                  fontSize: 10, fontWeight: 600, color: '#80b0c8',
-                  fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 10,
-                }}>
-                  Filtering
+            {activeBottomTab === 'VEHICLES' ? (
+              VEH_TABS_TOP.map(tab => {
+                const count = tab.id === 'all' ? allVehicles.length : tab.id === 'active' ? vehActiveCount : vehInactiveCount;
+                return (
+                  <TopTab
+                    key={tab.id}
+                    tab={{ ...tab, count }}
+                    active={vehicleTopTab === tab.id}
+                    onClick={() => setVehicleTopTab(tab.id)}
+                  />
+                );
+              })
+            ) : (
+              <>
+                {TABS_TOP.map((tab, i) => (
+                  <React.Fragment key={tab.id}>
+                    {tab.id === 'mine' && <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.15)', marginInline: 4 }} />}
+                    <TopTab tab={tab} active={activeTopTab === tab.id} onClick={() => setActiveTopTab(tab.id)} />
+                  </React.Fragment>
+                ))}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setFilterOpen(o => !o)}
+                    onMouseEnter={() => setFilterHovered(true)}
+                    onMouseLeave={() => setFilterHovered(false)}
+                    style={{
+                      width: 28, height: 28, borderRadius: 6, border: 'none',
+                      background: filterOpen ? 'rgba(0,50,80,0.65)' : filterHovered ? 'rgba(0,70,102,0.2)' : 'transparent',
+                      color: filterOpen ? '#80d0f0' : filterHovered ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                  >
+                    <FilterIcon />
+                    {activeFilterCount > 0 && (
+                      <div style={{
+                        position: 'absolute', top: 0, right: 0, width: 16, height: 16, borderRadius: 8,
+                        background: '#cc4422', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: "'Inter', sans-serif",
+                        boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)', pointerEvents: 'none',
+                      }}>
+                        {activeFilterCount}
+                      </div>
+                    )}
+                  </button>
+                  {filterHovered && !filterOpen && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                      marginTop: 4, padding: '3px 8px', borderRadius: 4,
+                      background: '#012d42', border: '1px solid #153f53',
+                      fontSize: 10, fontWeight: 600, color: '#80b0c8',
+                      fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 10,
+                    }}>
+                      Filtering
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           <div style={{ flex: 1 }} />
@@ -574,90 +710,167 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
           borderRadius: 16, overflow: 'hidden',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         }}>
-          <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
-            <div className="filter-panel-inner">
-              <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
-            </div>
-          </div>
+          {activeBottomTab === 'CAMPAIGNS' ? (
+            <>
+              <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
+                <div className="filter-panel-inner">
+                  <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
+                </div>
+              </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-            {/* Header row */}
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
-              background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
-            }}>
-              {COLUMNS.map(col => {
-                const isActive = sort.key === col.key;
-                const isHovered = hoveredCol === col.key;
+              <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                {/* Header row */}
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
+                  background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
+                }}>
+                  {COLUMNS.map(col => {
+                    const isActive = sort.key === col.key;
+                    const isHovered = hoveredCol === col.key;
+                    return (
+                      <div
+                        key={col.key}
+                        onClick={() => handleColSort(col.key)}
+                        onMouseEnter={() => setHoveredCol(col.key)}
+                        onMouseLeave={() => setHoveredCol(null)}
+                        style={{
+                          ...headerCell, flex: col.flex, minWidth: 0,
+                          cursor: 'pointer', display: 'flex', alignItems: 'center',
+                          color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
+                          userSelect: 'none', transition: 'color 0.15s',
+                        }}
+                      >
+                        {col.label}
+                        {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {sortedCampaigns.length === 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                      <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
+                  </div>
+                )}
+
+                {sortedCampaigns.map((row, i) => {
+                  const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                  const hoverBg = 'rgba(0,70,102,0.2)';
+                  return (
+                    <div
+                      key={row.id}
+                      style={{
+                        display: 'flex', alignItems: 'center',
+                        height: 32, flexShrink: 0,
+                        borderBottom: '1px solid rgba(21,63,83,0.5)',
+                        borderLeft: '2px solid transparent',
+                        background: baseBg, cursor: 'pointer', transition: 'background 0.1s',
+                      }}
+                      onClick={() => handleCampaignOpen(row)}
+                      onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                      onMouseLeave={e => e.currentTarget.style.background = baseBg}
+                    >
+                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
+                      </div>
+                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
+                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
+                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
+                      </div>
+                      <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
+                      </div>
+                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
+                      <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
+                      <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                        <StatusBadge status={row.statuses[0]} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            /* VEHICLES TABLE */
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+              {/* Header row */}
+              <div style={{
+                display: 'flex', alignItems: 'center',
+                height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
+                background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
+              }}>
+                {VEH_COLUMNS.map(col => {
+                  const isActive = vehicleSort.key === col.key;
+                  const isHovered = vehicleHovCol === col.key;
+                  return (
+                    <div
+                      key={col.key}
+                      onClick={() => handleVehicleColSort(col.key)}
+                      onMouseEnter={() => setVehicleHovCol(col.key)}
+                      onMouseLeave={() => setVehicleHovCol(null)}
+                      style={{
+                        ...headerCell, flex: col.flex, minWidth: 0,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center',
+                        color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
+                        userSelect: 'none', transition: 'color 0.15s',
+                      }}
+                    >
+                      {col.label}
+                      {(isActive || isHovered) && <SortArrow active={isActive} dir={vehicleSort.dir} />}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {sortedVehicles.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No vehicles found</div>
+                  <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filter</div>
+                </div>
+              )}
+
+              {sortedVehicles.map((v, i) => {
+                const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                const hoverBg = 'rgba(0,70,102,0.2)';
                 return (
                   <div
-                    key={col.key}
-                    onClick={() => handleColSort(col.key)}
-                    onMouseEnter={() => setHoveredCol(col.key)}
-                    onMouseLeave={() => setHoveredCol(null)}
+                    key={v.id}
                     style={{
-                      ...headerCell, flex: col.flex, minWidth: 0,
-                      cursor: 'pointer', display: 'flex', alignItems: 'center',
-                      color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                      userSelect: 'none', transition: 'color 0.15s',
+                      display: 'flex', alignItems: 'center',
+                      height: 32, flexShrink: 0,
+                      borderBottom: '1px solid rgba(21,63,83,0.5)',
+                      background: baseBg, transition: 'background 0.1s', cursor: 'pointer',
                     }}
+                    onClick={() => handleVehicleOpen(v)}
+                    onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                    onMouseLeave={e => e.currentTarget.style.background = baseBg}
                   >
-                    {col.label}
-                    {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                    <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
+                      <div title={v.vin} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.vin}</div>
+                    </div>
+                    <div style={{ ...cell, flex: 1.8, minWidth: 0 }}>{v.model}</div>
+                    <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{v.year}</div>
+                    <div style={{ ...cell, flex: 1.5, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 11 }}>{v.sw}</div>
+                    <div style={{ ...cell, flex: 1.6, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 10 }}>{v.chip}</div>
+                    <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                      <VehicleStatusBadge status={v.status} />
+                    </div>
                   </div>
                 );
               })}
             </div>
-
-            {sortedCampaigns.length === 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  <line x1="8" y1="11" x2="14" y2="11"/>
-                </svg>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
-                <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
-              </div>
-            )}
-
-            {sortedCampaigns.map((row, i) => {
-              const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
-              const hoverBg = 'rgba(0,70,102,0.2)';
-              return (
-                <div
-                  key={row.id}
-                  style={{
-                    display: 'flex', alignItems: 'center',
-                    height: 32, flexShrink: 0,
-                    borderBottom: '1px solid rgba(21,63,83,0.5)',
-                    borderLeft: '2px solid transparent',
-                    background: baseBg, cursor: 'pointer', transition: 'background 0.1s',
-                  }}
-                  onClick={() => handleCampaignOpen(row)}
-                  onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                  onMouseLeave={e => e.currentTarget.style.background = baseBg}
-                >
-                  <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                    <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
-                  </div>
-                  <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
-                  <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
-                  <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                    <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
-                  </div>
-                  <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
-                    <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
-                  </div>
-                  <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
-                  <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
-                  <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                    <StatusBadge status={row.statuses[0]} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          )}
         </div>
 
         {/* Bottom floating bar — no VARIABLES tab */}
