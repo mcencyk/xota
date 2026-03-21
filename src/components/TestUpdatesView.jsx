@@ -54,16 +54,16 @@ const TABS_TOP = [
 
 const TABS_BOTTOM = [
   { id: 'CAMPAIGNS', label: 'CAMPAIGNS', tooltip: 'New Lab Campaign' },
-  { id: 'VEHICLES',  label: 'VEHICLES',  tooltip: 'New Vehicle'      },
+  { id: 'VEHICLES',  label: 'VEHICLES',  tooltip: 'Add Vehicle'      },
 ];
 
 const BRAND_MODELS = {
   vw:    ['ID.3', 'ID.4', 'ID.4 GTX', 'ID.5', 'ID.7', 'Golf 8', 'Passat B9', 'Tiguan'],
-  audi:  ['A3', 'A4 TFSI', 'A5', 'A6', 'Q3', 'Q4 e-tron', 'Q5', 'Q8 e-tron'],
-  ford:  ['Focus', 'Mustang Mach-E', 'Puma ST', 'Kuga PHEV', 'Explorer PHEV', 'Transit Custom'],
+  audi:  ['A3', 'A5', 'A6', 'Q3', 'Q4 e-tron', 'Q5', 'Q6 e-tron', 'Q8 e-tron', 'e-tron GT'],
+  ford:  ['Mustang Mach-E', 'Puma ST', 'Kuga PHEV', 'Explorer PHEV', 'Transit Custom', 'Focus Active'],
   seat:  ['Ibiza FR', 'Leon e-Hybrid', 'Arona', 'Ateca', 'Tarraco'],
   skoda: ['Octavia iV', 'Superb iV', 'Fabia', 'Kamiq', 'Karoq', 'Kodiaq', 'Enyaq iV'],
-  volvo: ['XC40 Recharge', 'XC60 T8', 'XC90 B5', 'V60 CC', 'C40 Recharge', 'S60 Recharge'],
+  volvo: ['XC40 Recharge', 'XC60 T8', 'XC90 B6', 'C40 Recharge', 'S60 Recharge', 'EX30', 'EX90'],
 };
 const VEH_SW   = ['v2.4.1','v2.8.3','v3.0.0','v3.1.2','v3.2.4','v4.0.0','v4.1.1','v4.2.0'];
 const VEH_CHIP = ['ECU-MQB-4.1','ECU-MQB-4.2','BMS-v2.0','BMS-v2.1','GW-1.4','GW-2.0','HVAC-3.1','NAV-2.5'];
@@ -85,7 +85,8 @@ function generateLabVehicles(brandId = 'vw') {
     const sw    = VEH_SW[Math.floor(rng() * VEH_SW.length)];
     const chip  = VEH_CHIP[Math.floor(rng() * VEH_CHIP.length)];
     const status = rng() > 0.22 ? 'Active' : 'Inactive';
-    return { id: i + 1, vin, model, year, sw, chip, status };
+    const auth   = status === 'Active' ? 'CONNECTED' : (rng() > 0.45 ? 'CONNECTED' : 'PENDING');
+    return { id: i + 1, vin, model, year, sw, chip, status, auth };
   });
 }
 
@@ -103,6 +104,20 @@ function VehicleStatusBadge({ status }) {
   );
 }
 
+const VEH_AUTH_CFG = {
+  CONNECTED: { bg: 'rgba(40,160,200,0.15)', color: '#28a0c8', dot: '#28a0c8' },
+  PENDING:   { bg: 'rgba(200,140,40,0.15)', color: '#c88c28', dot: '#c88c28' },
+};
+function AuthStatusBadge({ auth }) {
+  const cfg = VEH_AUTH_CFG[auth] || VEH_AUTH_CFG.PENDING;
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'2px 8px', borderRadius:99, background:cfg.bg, fontSize:10, fontWeight:700, color:cfg.color, fontFamily:"'Inter',sans-serif", letterSpacing:0.5, whiteSpace:'nowrap' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, flexShrink:0 }} />
+      {auth}
+    </span>
+  );
+}
+
 const VEH_COLUMNS = [
   { key: 'vin',    label: 'VIN',              flex: 2.5  },
   { key: 'model',  label: 'MODEL',            flex: 1.8  },
@@ -110,6 +125,7 @@ const VEH_COLUMNS = [
   { key: 'sw',     label: 'SOFTWARE VERSION', flex: 1.5  },
   { key: 'chip',   label: 'CHIP VERSION',     flex: 1.6  },
   { key: 'status', label: 'STATUS',           flex: 1.2  },
+  { key: 'auth',   label: 'AUTHENTICATION',   flex: 1.4  },
 ];
 
 const VEH_TABS_TOP = [
@@ -191,7 +207,7 @@ function SearchIcon() {
   );
 }
 
-function BottomTab({ label, tooltip, active, onClick }) {
+function BottomTab({ label, tooltip, active, onClick, onPlus }) {
   const [hovered, setHovered] = useState(false);
   const [plusHovered, setPlusHovered] = useState(false);
   return (
@@ -216,6 +232,7 @@ function BottomTab({ label, tooltip, active, onClick }) {
       <span
         onMouseEnter={e => { e.stopPropagation(); setPlusHovered(true); }}
         onMouseLeave={e => { e.stopPropagation(); setPlusHovered(false); }}
+        onClick={e => { e.stopPropagation(); onPlus?.(); }}
         style={{
           width: 20, height: 20, borderRadius: 5,
           background: plusHovered ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.1)',
@@ -267,7 +284,8 @@ function FilterPanel({ filters, onChange, activeFilterCount }) {
   const [resetHovered, setResetHovered] = useState(false);
   return (
     <div style={{
-      display: 'flex', gap: 24, padding: '12px 16px',
+      position: 'relative',
+      display: 'flex', gap: 24, padding: '12px 80px 12px 16px',
       background: 'rgba(0,16,26,0.72)', borderBottom: '1px solid #153f53',
       flexWrap: 'wrap', alignItems: 'flex-start',
     }}>
@@ -367,7 +385,7 @@ function FilterPanel({ filters, onChange, activeFilterCount }) {
         onMouseEnter={() => activeFilterCount > 0 && setResetHovered(true)}
         onMouseLeave={() => setResetHovered(false)}
         style={{
-          marginLeft: 'auto', alignSelf: 'flex-end',
+          position: 'absolute', top: 12, right: 16,
           padding: '10px 18px', borderRadius: 8,
           cursor: activeFilterCount > 0 ? 'pointer' : 'default',
           background: activeFilterCount > 0 ? (resetHovered ? 'rgba(180,40,40,0.28)' : 'rgba(180,40,40,0.15)') : 'rgba(255,255,255,0.03)',
@@ -380,6 +398,319 @@ function FilterPanel({ filters, onChange, activeFilterCount }) {
         Reset
       </span>
     </div>
+  );
+}
+
+function VehicleFilterPanel({ filters, onChange, activeFilterCount, brandModels = [] }) {
+  const [resetHovered, setResetHovered] = useState(false);
+  const toggle = (key, val) => {
+    const arr = filters[key];
+    onChange({ ...filters, [key]: arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val] });
+  };
+  const chipStyle = (active, cfg) => ({
+    display: 'inline-flex', alignItems: 'center', gap: 4,
+    padding: '2px 8px', borderRadius: 99, cursor: 'pointer',
+    background: active ? (cfg?.bg || 'rgba(0,70,102,0.4)') : 'rgba(255,255,255,0.04)',
+    border: active ? `1px solid ${cfg?.dot || '#28779c'}` : '1px solid rgba(255,255,255,0.1)',
+    fontSize: 10, fontWeight: 600, color: active ? (cfg?.color || '#80d0f0') : 'rgba(128,176,200,0.5)',
+    fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap', transition: 'all 0.15s',
+  });
+  const label9 = { fontSize: 9, fontWeight: 700, letterSpacing: 1, color: 'rgba(128,176,200,0.5)', fontFamily: "'Inter',sans-serif", marginBottom: 6, textTransform: 'uppercase' };
+  return (
+    <div style={{ position: 'relative', display: 'flex', gap: 24, padding: '12px 80px 12px 16px', background: 'rgba(0,16,26,0.72)', borderBottom: '1px solid #153f53', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      {/* Status */}
+      <div>
+        <div style={label9}>Status</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['Active', 'Inactive'].map(s => {
+            const cfg = VEH_STATUS_CFG[s];
+            const active = filters.statuses.includes(s);
+            return (
+              <span key={s} onClick={() => toggle('statuses', s)} style={chipStyle(active, cfg)}>
+                {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />}
+                {s.toUpperCase()}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      {/* Authentication */}
+      <div>
+        <div style={label9}>Authentication</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {['CONNECTED', 'PENDING'].map(a => {
+            const cfg = VEH_AUTH_CFG[a];
+            const active = filters.auths.includes(a);
+            return (
+              <span key={a} onClick={() => toggle('auths', a)} style={chipStyle(active, cfg)}>
+                {active && <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />}
+                {a}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+      {/* Production Year */}
+      <div>
+        <div style={label9}>Production Year</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input type="number" min="2019" max="2030" placeholder="From" value={filters.yearFrom} onChange={e => onChange({ ...filters, yearFrom: e.target.value })}
+            style={{ width: 58, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '2px 6px', fontSize: 10, color: 'rgba(128,176,200,0.7)', fontFamily: "'Inter',sans-serif", outline: 'none', colorScheme: 'dark' }} />
+          <span style={{ fontSize: 10, color: 'rgba(128,176,200,0.4)' }}>—</span>
+          <input type="number" min="2019" max="2030" placeholder="To" value={filters.yearTo} onChange={e => onChange({ ...filters, yearTo: e.target.value })}
+            style={{ width: 58, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '2px 6px', fontSize: 10, color: 'rgba(128,176,200,0.7)', fontFamily: "'Inter',sans-serif", outline: 'none', colorScheme: 'dark' }} />
+        </div>
+      </div>
+      {/* Model */}
+      {brandModels.length > 0 && (
+        <div>
+          <div style={label9}>Model</div>
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {brandModels.map(m => {
+              const active = filters.models.includes(m);
+              return (
+                <span key={m} onClick={() => toggle('models', m)}
+                  style={{ padding: '2px 10px', borderRadius: 6, cursor: 'pointer', background: active ? 'rgba(0,70,102,0.4)' : 'rgba(255,255,255,0.04)', border: active ? '1px solid #28779c' : '1px solid rgba(255,255,255,0.1)', fontSize: 10, fontWeight: 600, color: active ? '#80d0f0' : 'rgba(128,176,200,0.5)', fontFamily: "'Inter',sans-serif", transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
+                  {m}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      {/* Reset */}
+      <span
+        onClick={() => activeFilterCount > 0 && onChange({ statuses: [], auths: [], models: [], yearFrom: '', yearTo: '' })}
+        onMouseEnter={() => activeFilterCount > 0 && setResetHovered(true)}
+        onMouseLeave={() => setResetHovered(false)}
+        style={{
+          position: 'absolute', top: 12, right: 16,
+          padding: '10px 18px', borderRadius: 8,
+          cursor: activeFilterCount > 0 ? 'pointer' : 'default',
+          background: activeFilterCount > 0 ? (resetHovered ? 'rgba(180,40,40,0.28)' : 'rgba(180,40,40,0.15)') : 'rgba(255,255,255,0.03)',
+          border: activeFilterCount > 0 ? (resetHovered ? '1px solid rgba(180,40,40,0.75)' : '1px solid rgba(180,40,40,0.45)') : '1px solid rgba(255,255,255,0.08)',
+          fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: 'uppercase',
+          color: activeFilterCount > 0 ? (resetHovered ? '#ff8080' : '#e06060') : 'rgba(128,176,200,0.25)',
+          fontFamily: "'Inter',sans-serif", transition: 'all 0.15s', userSelect: 'none',
+        }}
+      >
+        Reset
+      </span>
+    </div>
+  );
+}
+
+// ─── Add Vehicle Modal ────────────────────────────────────────────────────────
+function AVField({ label, value, onChange, type = 'text', maxLength, atLimit = false }) {
+  const [focused, setFocused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const isDate = type === 'date';
+  const floated = focused || isDate || value.length > 0;
+  const borderColor = atLimit
+    ? (focused ? '#cc3333' : hovered ? '#b43030' : 'rgba(180,40,40,0.7)')
+    : (focused ? '#28779c' : hovered ? '#2a6a87' : '#16506c');
+  const bgColor = atLimit
+    ? (focused ? 'rgba(180,40,40,0.14)' : hovered ? 'rgba(180,40,40,0.12)' : 'rgba(180,40,40,0.08)')
+    : (focused ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)');
+  const shadow = focused
+    ? (atLimit
+        ? '0px 0px 8px 0px rgba(180,40,40,0.28), inset 0px 0px 4px 0px rgba(0,0,0,0.24)'
+        : '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)')
+    : '0px 1px 2px 0px rgba(0,0,0,0.12)';
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        position:'relative', height:52, borderRadius:8,
+        border:`1px solid ${borderColor}`, background:bgColor, boxShadow:shadow,
+        transition:'border-color 0.15s, box-shadow 0.15s, background 0.15s', overflow:'hidden',
+      }}
+    >
+      <label style={{
+        position:'absolute', left:12,
+        top: floated ? 7 : '50%',
+        transform: floated ? 'none' : 'translateY(-50%)',
+        fontSize: floated ? 9 : 12, fontWeight: floated ? 700 : 500,
+        color: floated ? (atLimit ? 'rgba(200,80,80,0.7)' : 'rgba(128,176,200,0.55)') : 'rgba(128,176,200,0.6)',
+        fontFamily:"'Inter', sans-serif",
+        letterSpacing: floated ? 0.8 : 0, textTransform: floated ? 'uppercase' : 'none',
+        pointerEvents:'none',
+        transition:'top 0.15s, font-size 0.15s, transform 0.15s, color 0.15s',
+      }}>{label}</label>
+      <input
+        type={isDate ? 'date' : type}
+        value={value}
+        maxLength={maxLength}
+        onChange={e => { if (maxLength && e.target.value.length > maxLength) return; onChange(e.target.value); }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{
+          position:'absolute', left:0, right:0, top:0, bottom:0,
+          background:'transparent', border:'none', outline:'none',
+          fontFamily:"'Inter', sans-serif", fontSize:13, fontWeight:500,
+          color:'#ffffff', caretColor:'#ffffff',
+          padding:'22px 12px 6px',
+          ...(isDate ? { colorScheme:'dark' } : {}),
+        }}
+      />
+    </div>
+  );
+}
+
+function AVSelect({ label, value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
+  const borderColor = open ? '#28779c' : hovered ? '#2a6a87' : '#16506c';
+  const bgColor     = open ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)';
+  return (
+    <div ref={ref} style={{ position:'relative', height:52, borderRadius:8, border:`1px solid ${borderColor}`, background:bgColor, boxShadow: open ? '0px 0px 8px 0px rgba(40,119,156,0.32), inset 0px 0px 4px 0px rgba(0,0,0,0.24)' : '0px 1px 2px 0px rgba(0,0,0,0.12)', transition:'border-color 0.15s, box-shadow 0.15s, background 0.15s', cursor:'pointer' }}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      onClick={() => setOpen(o => !o)}
+    >
+      <label style={{ position:'absolute', left:12, top:7, fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:0.8, textTransform:'uppercase', pointerEvents:'none' }}>{label}</label>
+      <div style={{ position:'absolute', left:12, right:36, bottom:8, fontSize:13, fontWeight:500, color:'#ffffff', fontFamily:"'Inter', sans-serif", whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{value}</div>
+      <div style={{ position:'absolute', right:12, top:'50%', transform:'translateY(-50%)', color:'rgba(128,176,200,0.6)', display:'flex', ...(open ? { transform:'translateY(-50%) rotate(180deg)' } : {}), transition:'transform 0.2s' }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      {open && (
+        <div style={{ position:'absolute', top:'calc(100% + 4px)', left:0, right:0, background:'#012d42', border:'1px solid #153f53', borderRadius:8, boxShadow:'0px 8px 12px rgba(0,0,0,0.18)', overflow:'hidden', zIndex:10 }}>
+          {options.map((opt, i) => (
+            <div key={opt} onClick={e => { e.stopPropagation(); onChange(opt); setOpen(false); }}
+              style={{ padding:'10px 12px', cursor:'pointer', borderBottom: i < options.length - 1 ? '1px solid #153f53' : 'none', fontSize:12, fontWeight:500, color: opt === value ? '#ffffff' : '#80b0c8', transition:'background 0.12s' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,70,102,0.3)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >{opt}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddVehicleModal({ onClose, onAdd, models = [] }) {
+  const [closing, setClosing] = useState(false);
+  const [closeHov, setCloseHov] = useState(false);
+  const [cancelHov, setCancelHov] = useState(false);
+  const [addHov, setAddHov] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const authCodeRef = React.useRef(null);
+
+  const [vin,      setVin]      = useState('');
+  const [model,    setModel]    = useState(models[0] || '');
+  const [prodDate, setProdDate] = useState('');
+  const [sw,       setSw]       = useState('');
+  const [chip,     setChip]     = useState('');
+  const [status,   setStatus]   = useState('Active');
+
+  const vinFull = vin.length === 17;
+  const canAdd  = vinFull && model.trim().length > 0;
+
+  function handleClose() { setClosing(true); }
+
+  function handleAdd() {
+    if (!canAdd || adding) return;
+    setAdding(true);
+    setTimeout(() => {
+      authCodeRef.current = `${vin.slice(0,4)}-${vin.slice(4,8)}-${vin.slice(8,12)}`;
+      setAdding(false);
+      setClosing(true);
+    }, 1400);
+  }
+
+  return (
+    <>
+      <div onClick={adding ? undefined : handleClose} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,46,67,0.75)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', animation: closing ? 'backdropFadeOut 0.18s ease forwards' : 'backdropFadeIn 0.22s ease' }} />
+      <div
+        onAnimationEnd={() => { if (closing) { if (authCodeRef.current) onAdd?.(authCodeRef.current); else onClose(); } }}
+        style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:520, background:'rgba(1,45,66,0.82)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', border:'1px solid #153f53', borderRadius:24, padding:24, display:'flex', flexDirection:'column', gap:24, boxShadow:'0px 0px 16px 0px rgba(0,0,0,0.24)', zIndex:201, boxSizing:'border-box', animation: closing ? 'modalFadeOut 0.18s ease forwards' : 'modalFadeIn 0.22s ease forwards' }}
+      >
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontSize:20, fontWeight:600, color:'#ffffff', fontFamily:"'Montserrat', sans-serif", letterSpacing:0.4 }}>Add Vehicle</span>
+          <div style={{ position:'relative' }}>
+            <button onClick={adding ? undefined : handleClose} onMouseEnter={() => setCloseHov(true)} onMouseLeave={() => setCloseHov(false)}
+              style={{ width:24, height:24, background:'none', border:'none', padding:0, cursor: adding ? 'default' : 'pointer', color: closeHov && !adding ? 'rgba(204,223,233,0.9)' : 'rgba(128,176,200,0.5)', display:'flex', alignItems:'center', justifyContent:'center', transition:'color 0.15s' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            {closeHov && !adding && (
+              <div style={{ position:'absolute', bottom:'calc(100% + 6px)', left:'50%', transform:'translateX(-50%)', padding:'3px 8px', borderRadius:4, background:'#012d42', border:'1px solid #153f53', fontSize:10, fontWeight:600, color:'#80b0c8', fontFamily:"'Inter', sans-serif", whiteSpace:'nowrap', pointerEvents:'none', zIndex:210 }}>Close</div>
+            )}
+          </div>
+        </div>
+
+        {/* Fields */}
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <AVField label="VIN" value={vin} onChange={setVin} maxLength={17} atLimit={vinFull} />
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+            <AVSelect label="Model"           value={model}    options={models}     onChange={setModel} />
+            <AVField  label="Production Date" value={prodDate} onChange={setProdDate} type="date" />
+            <AVField  label="Software Version" value={sw}      onChange={setSw} />
+            <AVField  label="Chip Version"     value={chip}    onChange={setChip} />
+          </div>
+          <AVSelect label="Status" value={status} options={['Active', 'Inactive']} onChange={setStatus} />
+        </div>
+
+        {/* Footer */}
+        <div style={{ display:'flex', justifyContent:'flex-end', gap:8 }}>
+          <button onClick={adding ? undefined : handleClose} onMouseEnter={() => setCancelHov(true)} onMouseLeave={() => setCancelHov(false)}
+            style={{ padding:'10px 18px', borderRadius:8, fontFamily:"'Inter', sans-serif", fontWeight:700, fontSize:10, letterSpacing:1.2, textTransform:'uppercase', color: cancelHov && !adding ? '#ccdfe9' : 'rgba(128,176,200,0.7)', background: cancelHov && !adding ? 'rgba(0,70,102,0.28)' : 'transparent', border:'1px solid rgba(128,176,200,0.2)', cursor: adding ? 'default' : 'pointer', transition:'all 0.15s', opacity: adding ? 0.4 : 1 }}>
+            Cancel
+          </button>
+          <button onClick={handleAdd} onMouseEnter={() => setAddHov(true)} onMouseLeave={() => setAddHov(false)}
+            style={{ padding:'10px 18px', borderRadius:8, fontFamily:"'Inter', sans-serif", fontWeight:700, fontSize:10, letterSpacing:1.2, textTransform:'uppercase', minWidth:64, position:'relative', display:'flex', alignItems:'center', justifyContent:'center', color: !canAdd ? 'rgba(128,176,200,0.3)' : (addHov && !adding ? '#ffffff' : '#28a0c8'), background: !canAdd ? 'rgba(0,70,102,0.1)' : (addHov && !adding ? 'rgba(40,160,200,0.28)' : 'rgba(40,160,200,0.16)'), border: !canAdd ? '1px solid rgba(40,100,140,0.2)' : '1px solid rgba(40,160,200,0.4)', cursor: canAdd && !adding ? 'pointer' : 'default', transition:'all 0.15s' }}>
+            <div style={{ width:14, height:14, borderRadius:'50%', border:'2px solid rgba(40,160,200,0.25)', borderTopColor:'#28a0c8', animation:'iteruSpin 0.75s linear infinite', flexShrink:0, opacity: adding ? 1 : 0 }} />
+            <span style={{ position:'absolute', opacity: adding ? 0 : 1 }}>ADD</span>
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function AuthCodeModal({ code, onClose }) {
+  const [closing, setClosing] = useState(false);
+  const [doneHov, setDoneHov] = useState(false);
+  function handleClose() { setClosing(true); }
+  return (
+    <>
+      <div onClick={handleClose} style={{ position:'fixed', inset:0, zIndex:200, background:'rgba(0,46,67,0.75)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', animation: closing ? 'backdropFadeOut 0.18s ease forwards' : 'backdropFadeIn 0.22s ease' }} />
+      <div
+        onAnimationEnd={() => { if (closing) onClose(); }}
+        style={{ position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:440, background:'rgba(1,45,66,0.92)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', border:'1px solid #153f53', borderRadius:24, padding:32, display:'flex', flexDirection:'column', alignItems:'center', gap:24, boxShadow:'0px 0px 32px rgba(0,0,0,0.36)', zIndex:201, boxSizing:'border-box', animation: closing ? 'modalFadeOut 0.18s ease forwards' : 'modalFadeIn 0.22s ease forwards' }}
+      >
+        {/* Icon */}
+        <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(40,160,200,0.15)', border:'1px solid rgba(40,160,200,0.35)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#28a0c8" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+
+        {/* Title + subtitle */}
+        <div style={{ textAlign:'center', display:'flex', flexDirection:'column', gap:8 }}>
+          <span style={{ fontSize:20, fontWeight:600, color:'#ffffff', fontFamily:"'Montserrat', sans-serif", letterSpacing:0.4 }}>Authentication Code</span>
+          <span style={{ fontSize:12, fontWeight:400, color:'rgba(128,176,200,0.65)', fontFamily:"'Inter', sans-serif", lineHeight:1.6 }}>
+            Enter this code physically in the vehicle<br/>to complete the registration process.
+          </span>
+        </div>
+
+        {/* Code */}
+        <div style={{ background:'rgba(0,30,48,0.7)', border:'1px solid rgba(40,160,200,0.3)', borderRadius:12, padding:'16px 32px', letterSpacing:4, fontSize:22, fontWeight:700, color:'#28a0c8', fontFamily:"'Inter', sans-serif" }}>
+          {code}
+        </div>
+
+        <button onClick={handleClose} onMouseEnter={() => setDoneHov(true)} onMouseLeave={() => setDoneHov(false)}
+          style={{ padding:'10px 32px', borderRadius:8, fontFamily:"'Inter', sans-serif", fontWeight:700, fontSize:10, letterSpacing:1.2, textTransform:'uppercase', color: doneHov ? '#ffffff' : '#28a0c8', background: doneHov ? 'rgba(40,160,200,0.28)' : 'rgba(40,160,200,0.16)', border:'1px solid rgba(40,160,200,0.4)', cursor:'pointer', transition:'all 0.15s' }}>
+          Done
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -406,19 +737,32 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
   const [vehicleTopTab, setVehicleTopTab] = useState('all');
   const [vehicleSort, setVehicleSort] = useState({ key: 'id', dir: 'asc' });
   const [vehicleHovCol, setVehicleHovCol] = useState(null);
+  const [vehicleFilterOpen, setVehicleFilterOpen] = useState(false);
+  const [vehicleFilterHovered, setVehicleFilterHovered] = useState(false);
+  const [vehicleFilters, setVehicleFilters] = useState({ statuses: [], auths: [], models: [], yearFrom: '', yearTo: '' });
+  const [addVehicleOpen, setAddVehicleOpen] = useState(false);
+  const [authCodeResult, setAuthCodeResult] = useState(null);
 
   const allVehicles = useMemo(() => generateLabVehicles(activeBrand?.id || 'vw'), [activeBrand?.id]);
 
   const filteredVehicles = useMemo(() => {
     const sl = searchValue.trim().toLowerCase();
+    const vf = vehicleFilters;
     return allVehicles
       .filter(v => {
         if (vehicleTopTab === 'active')   return v.status === 'Active';
         if (vehicleTopTab === 'inactive') return v.status === 'Inactive';
         return true;
       })
-      .filter(v => !sl || [v.vin, v.model, String(v.year), v.sw, v.chip, v.status].some(f => f.toLowerCase().includes(sl)));
-  }, [allVehicles, vehicleTopTab, searchValue]);
+      .filter(v => vf.statuses.length === 0 || vf.statuses.includes(v.status))
+      .filter(v => vf.auths.length === 0    || vf.auths.includes(v.auth))
+      .filter(v => vf.models.length === 0   || vf.models.includes(v.model))
+      .filter(v => !vf.yearFrom || v.year >= Number(vf.yearFrom))
+      .filter(v => !vf.yearTo   || v.year <= Number(vf.yearTo))
+      .filter(v => !sl || [v.vin, v.model, String(v.year), v.sw, v.chip, v.status, v.auth].some(f => f.toLowerCase().includes(sl)));
+  }, [allVehicles, vehicleTopTab, vehicleFilters, searchValue]);
+
+  const activeVehicleFilterCount = vehicleFilters.statuses.length + vehicleFilters.auths.length + vehicleFilters.models.length + (vehicleFilters.yearFrom ? 1 : 0) + (vehicleFilters.yearTo ? 1 : 0);
 
   const sortedVehicles = useMemo(() => {
     return [...filteredVehicles].sort((a, b) => {
@@ -569,7 +913,7 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   };
 
-  return (
+  return (<>
     <div style={{
       display: 'flex', height: '100vh', width: '100vw',
       background: 'radial-gradient(ellipse 80% 70% at 50% 30%, #005478 0%, #004060 40%, #002233 100%)',
@@ -596,17 +940,56 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
           {/* Top tabs */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             {activeBottomTab === 'VEHICLES' ? (
-              VEH_TABS_TOP.map(tab => {
-                const count = tab.id === 'all' ? allVehicles.length : tab.id === 'active' ? vehActiveCount : vehInactiveCount;
-                return (
-                  <TopTab
-                    key={tab.id}
-                    tab={{ ...tab, count }}
-                    active={vehicleTopTab === tab.id}
-                    onClick={() => setVehicleTopTab(tab.id)}
-                  />
-                );
-              })
+              <>
+                {VEH_TABS_TOP.map(tab => {
+                  const count = tab.id === 'all' ? allVehicles.length : tab.id === 'active' ? vehActiveCount : vehInactiveCount;
+                  return (
+                    <TopTab
+                      key={tab.id}
+                      tab={{ ...tab, count }}
+                      active={vehicleTopTab === tab.id}
+                      onClick={() => setVehicleTopTab(tab.id)}
+                    />
+                  );
+                })}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setVehicleFilterOpen(o => !o)}
+                    onMouseEnter={() => setVehicleFilterHovered(true)}
+                    onMouseLeave={() => setVehicleFilterHovered(false)}
+                    style={{
+                      width: 28, height: 28, borderRadius: 6, border: 'none',
+                      background: vehicleFilterOpen ? 'rgba(0,50,80,0.65)' : vehicleFilterHovered ? 'rgba(0,70,102,0.2)' : 'transparent',
+                      color: vehicleFilterOpen ? '#80d0f0' : vehicleFilterHovered ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                  >
+                    <FilterIcon />
+                    {activeVehicleFilterCount > 0 && (
+                      <div style={{
+                        position: 'absolute', top: 0, right: 0, width: 16, height: 16, borderRadius: 8,
+                        background: '#cc4422', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 700, color: '#fff', fontFamily: "'Inter', sans-serif",
+                        boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)', pointerEvents: 'none',
+                      }}>
+                        {activeVehicleFilterCount}
+                      </div>
+                    )}
+                  </button>
+                  {vehicleFilterHovered && !vehicleFilterOpen && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                      marginTop: 4, padding: '3px 8px', borderRadius: 4,
+                      background: '#012d42', border: '1px solid #153f53',
+                      fontSize: 10, fontWeight: 600, color: '#80b0c8',
+                      fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 10,
+                    }}>
+                      Filtering
+                    </div>
+                  )}
+                </div>
+              </>
             ) : (
               <>
                 {TABS_TOP.map((tab, i) => (
@@ -799,6 +1182,17 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
             </>
           ) : (
             /* VEHICLES TABLE */
+            <>
+              <div className={`filter-panel-wrapper${vehicleFilterOpen ? ' open' : ''}`}>
+                <div className="filter-panel-inner">
+                  <VehicleFilterPanel
+                    filters={vehicleFilters}
+                    onChange={setVehicleFilters}
+                    activeFilterCount={activeVehicleFilterCount}
+                    brandModels={BRAND_MODELS[activeBrand?.id] || BRAND_MODELS.vw}
+                  />
+                </div>
+              </div>
             <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
               {/* Header row */}
               <div style={{
@@ -866,10 +1260,14 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
                     <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
                       <VehicleStatusBadge status={v.status} />
                     </div>
+                    <div style={{ flex: 1.4, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                      <AuthStatusBadge auth={v.auth} />
+                    </div>
                   </div>
                 );
               })}
             </div>
+            </>
           )}
         </div>
 
@@ -884,11 +1282,25 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
           animation: 'floatingBarEnter 0.45s cubic-bezier(0.22,1,0.36,1) both',
         }}>
           {TABS_BOTTOM.map(tab => (
-            <BottomTab key={tab.id} label={tab.label} tooltip={tab.tooltip} active={activeBottomTab === tab.id} onClick={() => setActiveBottomTab(tab.id)} />
+            <BottomTab
+              key={tab.id}
+              label={tab.label}
+              tooltip={tab.tooltip}
+              active={activeBottomTab === tab.id}
+              onClick={() => setActiveBottomTab(tab.id)}
+              onPlus={tab.id === 'VEHICLES' ? () => { setActiveBottomTab('VEHICLES'); setAddVehicleOpen(true); } : undefined}
+            />
           ))}
         </div>
 
       </div>
     </div>
+    {addVehicleOpen && <AddVehicleModal
+      onClose={() => setAddVehicleOpen(false)}
+      onAdd={code => { setAddVehicleOpen(false); setAuthCodeResult(code); }}
+      models={BRAND_MODELS[activeBrand?.id] || BRAND_MODELS.vw}
+    />}
+    {authCodeResult && <AuthCodeModal code={authCodeResult} onClose={() => setAuthCodeResult(null)} />}
+  </>
   );
 }

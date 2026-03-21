@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import Sidebar from './Sidebar';
 
+// ─── Brand models (last 6 years, 2020-2026) ───────────────────────────────────
+const BRAND_MODELS = {
+  vw:    ['ID.3', 'ID.4', 'ID.4 GTX', 'ID.5', 'ID.7', 'Golf 8', 'Passat B9', 'Tiguan'],
+  audi:  ['A3', 'A5', 'A6', 'Q3', 'Q4 e-tron', 'Q5', 'Q6 e-tron', 'Q8 e-tron', 'e-tron GT'],
+  ford:  ['Mustang Mach-E', 'Puma ST', 'Kuga PHEV', 'Explorer PHEV', 'Transit Custom', 'Focus Active'],
+  seat:  ['Ibiza FR', 'Leon e-Hybrid', 'Arona', 'Ateca', 'Tarraco'],
+  skoda: ['Octavia iV', 'Superb iV', 'Fabia', 'Kamiq', 'Karoq', 'Kodiaq', 'Enyaq iV'],
+  volvo: ['XC40 Recharge', 'XC60 T8', 'XC90 B6', 'C40 Recharge', 'S60 Recharge', 'EX30', 'EX90'],
+};
+
 // ─── Count-up animation ───────────────────────────────────────────────────────
 function useCountUp(target, duration = 600) {
   const [current, setCurrent] = useState(0);
@@ -417,7 +427,7 @@ function ConfigSelect({ label, value, options, onChange }) {
   );
 }
 
-function VehicleConfigModal({ vehicle, onClose }) {
+function VehicleConfigModal({ vehicle, onClose, models = [] }) {
   const [closing, setClosing] = useState(false);
   const [closeHov, setCloseHov] = useState(false);
   const [cancelHov, setCancelHov] = useState(false);
@@ -527,8 +537,8 @@ function VehicleConfigModal({ vehicle, onClose }) {
 
         {/* Fields grid */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-          <ConfigField label="Model"            value={model}    onChange={setModel} />
-          <ConfigField label="Production Date"  value={prodDate} onChange={setProdDate} type="date" />
+          <ConfigSelect label="Model"           value={model}    options={models}     onChange={setModel} />
+          <ConfigField  label="Production Date" value={prodDate} onChange={setProdDate} type="date" />
           <ConfigField label="Software Version" value={sw}       onChange={setSw} />
           <ConfigField label="Chip Version"     value={chip}     onChange={setChip} />
           <div style={{ gridColumn:'1 / -1' }}>
@@ -922,7 +932,7 @@ export default function VehicleDetailView({ vehicle, onBack, onNavChange, active
         </div>
       </div>
 
-      {configOpen && <VehicleConfigModal vehicle={vehicle} onClose={() => setConfigOpen(false)} />}
+      {configOpen && <VehicleConfigModal vehicle={vehicle} onClose={() => setConfigOpen(false)} models={BRAND_MODELS[activeBrand?.id] || BRAND_MODELS.vw} />}
       {removeOpen && <RemoveFleetModal   vehicle={vehicle} onClose={() => setRemoveOpen(false)} />}
     </>
   );
