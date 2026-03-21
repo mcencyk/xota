@@ -1872,7 +1872,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
         <Divider />
 
-        <NavIcon icon={<GridIcon />} active={activeNav === 'aftersales'} badge={attentionCount} label="Field" onClick={() => onNavChange('aftersales')} />
+        <NavIcon icon={<GridIcon />} active={activeNav === 'field'} badge={attentionCount} label="Field" onClick={() => onNavChange('field')} />
         <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} badge={testAttentionCount} label="Lab" onClick={() => onNavChange('people')} />
         <NavIcon icon={<ClipboardIcon />} active={reportsOpen} label="Reports" onClick={() => setReportsOpen(o => !o)} />
 

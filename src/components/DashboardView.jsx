@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import CampaignDetailView from './CampaignDetailView';
 import TestUpdatesView from './TestUpdatesView';
@@ -80,6 +80,57 @@ const TABS_BOTTOM = [
   { id: 'CAMPAIGNS',  label: 'CAMPAIGNS',  tooltip: 'New Campaign' },
   { id: 'CRITERIONS', label: 'VARIABLES', tooltip: 'New Variable' },
 ];
+
+const VARIABLES_DATA = [
+  { code: '01', name: 'ECU Firmware Baseline Config',    created: '10.01.2024', modified: '15.03.2024', source: 'ECU_BASE_CFG_v1.xlsx',  author: 'Jonathan Blackwell',    type: 'Manual', campaigns: 4, status: 'Active'     },
+  { code: '02', name: 'Brake Module Calibration Set',    created: '22.01.2024', modified: '22.01.2024', source: 'BRK_CAL_v2.xlsx',       author: 'Natalia Ferreira',      type: 'Import', campaigns: 2, status: 'Active'     },
+  { code: '03', name: 'Gateway Protocol Parameters',     created: '01.02.2024', modified: '01.03.2024', source: 'GW_PARAMS_2024.csv',    author: 'Hiroshi Tanaka',        type: 'Import', campaigns: 3, status: 'Active'     },
+  { code: '04', name: 'Powertrain Calibration Baseline', created: '12.02.2024', modified: '12.02.2024', source: 'PWR_CAL_BASE_2024.csv', author: 'Jonathan Blackwell',    type: 'Manual', campaigns: 1, status: 'Active'     },
+  { code: '05', name: 'ABS Thresholds v2.1',             created: '20.02.2024', modified: '05.04.2024', source: 'ABS_THRESH_v2.1.xlsx',  author: 'Amélie Duchamp',        type: 'Import', campaigns: 5, status: 'Active'     },
+  { code: '06', name: 'Drive Unit OTA Parameters',       created: '05.03.2024', modified: '05.03.2024', source: 'OTA_DU_PARAMS.csv',     author: 'Natalia Ferreira',      type: 'Import', campaigns: 3, status: 'Active'     },
+  { code: '07', name: 'Charging System Config Set',      created: '17.03.2024', modified: '17.03.2024', source: 'CHG_SYS_CFG_v3.xlsx',   author: 'Sebastian Müller',      type: 'Manual', campaigns: 2, status: 'Active'     },
+  { code: '08', name: 'Display Module Variables',        created: '01.04.2024', modified: '20.05.2024', source: 'DSP_VARS_1.5.xlsx',     author: 'Hiroshi Tanaka',        type: 'Import', campaigns: 1, status: 'Deprecated' },
+  { code: '09', name: 'HVAC Control Parameters',         created: '14.04.2024', modified: '14.04.2024', source: 'HVAC_CTRL_v3.csv',      author: 'Amélie Duchamp',        type: 'Import', campaigns: 2, status: 'Active'     },
+];
+
+const VAR_COLUMNS = [
+  { key: 'code',      label: 'CODE',          flex: 0.7  },
+  { key: 'name',      label: 'VARIABLE NAME', flex: 2.8  },
+  { key: 'created',   label: 'CREATED',       flex: 1.3  },
+  { key: 'modified',  label: 'LAST MODIFIED', flex: 1.3  },
+  { key: 'source',    label: 'SOURCE',        flex: 2.2  },
+  { key: 'author',    label: 'AUTHOR',        flex: 1.5  },
+  { key: 'type',      label: 'TYPE',          flex: 1    },
+  { key: 'campaigns', label: 'CAMPAIGNS',     flex: 1    },
+  { key: 'status',    label: 'STATUS',        flex: 1.2  },
+];
+
+const VAR_STATUS_CFG = {
+  Active:     { bg: 'rgba(40,140,80,0.2)',  color: '#38b060', dot: '#38b060' },
+  Deprecated: { bg: 'rgba(60,80,100,0.22)', color: '#607890', dot: '#607890' },
+};
+function VarStatusBadge({ status }) {
+  const cfg = VAR_STATUS_CFG[status] || VAR_STATUS_CFG.Deprecated;
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, padding:'2px 8px', borderRadius:99, background:cfg.bg, fontSize:10, fontWeight:700, color:cfg.color, fontFamily:"'Inter',sans-serif", letterSpacing:0.5, whiteSpace:'nowrap' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:cfg.dot, flexShrink:0 }} />
+      {status.toUpperCase()}
+    </span>
+  );
+}
+
+const VAR_TYPE_CFG = {
+  Manual: { bg: 'rgba(40,119,156,0.18)', color: '#28a0c8' },
+  Import: { bg: 'rgba(100,70,160,0.22)', color: '#a080e0' },
+};
+function VarTypeBadge({ type }) {
+  const cfg = VAR_TYPE_CFG[type] || VAR_TYPE_CFG.Manual;
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', padding:'2px 8px', borderRadius:99, background:cfg.bg, fontSize:10, fontWeight:700, color:cfg.color, fontFamily:"'Inter',sans-serif", letterSpacing:0.5, whiteSpace:'nowrap' }}>
+      {type.toUpperCase()}
+    </span>
+  );
+}
 
 const COLUMNS = [
   { key: 'name',     label: 'CAMPAIGN NAME',       flex: 3   },
@@ -400,7 +451,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
   const [loadingBack, setLoadingBack] = useState(false);
   const [loadStep, setLoadStep] = useState(0);
   const [loaderVisible, setLoaderVisible] = useState(false);
-  const [activeNav, setActiveNav] = useState('aftersales');
+  const [activeNav, setActiveNav] = useState('field');
   const [activeTopTab, setActiveTopTab] = useState('all');
   const [activeBottomTab, setActiveBottomTab] = useState('CAMPAIGNS');  // id
   const [searchValue, setSearchValue] = useState('');
@@ -411,6 +462,14 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
   const [sort, setSort] = useState({ key: 'name', dir: 'asc' });
   const [hoveredCol, setHoveredCol] = useState(null);
   const [loadSubtitle, setLoadSubtitle] = useState('Returning to Field');
+
+  const [varTypeTab, setVarTypeTab] = useState('all');
+  const [varSort, setVarSort] = useState({ key: 'code', dir: 'asc' });
+  const [varHovCol, setVarHovCol] = useState(null);
+
+  useEffect(() => {
+    if (activeNav === 'field') setActiveBottomTab('CAMPAIGNS');
+  }, [activeNav]);
 
   function handleCampaignOpen(row) {
     setLoadingCampaign(row);
@@ -581,6 +640,30 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     );
   }
 
+  function handleVarColSort(key) {
+    setVarSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' });
+  }
+
+  const varCounts = { all: VARIABLES_DATA.length, Manual: VARIABLES_DATA.filter(v => v.type === 'Manual').length, Import: VARIABLES_DATA.filter(v => v.type === 'Import').length };
+
+  const sortedVariables = [...VARIABLES_DATA]
+    .filter(v => {
+      if (varTypeTab === 'Manual') return v.type === 'Manual';
+      if (varTypeTab === 'Import') return v.type === 'Import';
+      return true;
+    })
+    .filter(v => {
+      if (!searchValue.trim()) return true;
+      const sl = searchValue.trim().toLowerCase();
+      return [v.code, v.name, v.source, v.author, v.type, v.status].some(f => f.toLowerCase().includes(sl));
+    })
+    .sort((a, b) => {
+      const va = String(a[varSort.key] ?? '');
+      const vb = String(b[varSort.key] ?? '');
+      const cmp = va.localeCompare(vb, undefined, { numeric: true });
+      return varSort.dir === 'asc' ? cmp : -cmp;
+    });
+
   const activeFilterCount =
     filters.statuses.length +
     filters.types.length +
@@ -635,60 +718,70 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
 
           {/* Top tabs */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {TABS_TOP.map((tab, i) => (
-              <React.Fragment key={tab.id}>
-                {tab.id === 'mine' && (
-                  <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.15)', marginInline: 4 }} />
-                )}
-                <TopTab
-                  tab={tab}
-                  active={activeTopTab === tab.id}
-                  onClick={() => setActiveTopTab(tab.id)}
-                />
-              </React.Fragment>
-            ))}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setFilterOpen(o => !o)}
-                onMouseEnter={() => setFilterHovered(true)}
-                onMouseLeave={() => setFilterHovered(false)}
-                style={{
-                  width: 28, height: 28, borderRadius: 6, border: 'none',
-                  background: filterOpen ? 'rgba(0,50,80,0.65)' : filterHovered ? 'rgba(0,70,102,0.2)' : 'transparent',
-                  color: filterOpen ? '#80d0f0' : filterHovered ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                <FilterIcon />
-                {activeFilterCount > 0 && (
-                  <div style={{
-                    position: 'absolute', top: 0, right: 0,
-                    width: 16, height: 16, borderRadius: 8,
-                    background: '#cc4422',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, fontWeight: 700, color: '#fff',
-                    fontFamily: "'Inter', sans-serif",
-                    boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)',
-                    pointerEvents: 'none',
-                  }}>
-                    {activeFilterCount}
-                  </div>
-                )}
-              </button>
-              {filterHovered && !filterOpen && (
-                <div style={{
-                  position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                  marginTop: 4, padding: '3px 8px', borderRadius: 4,
-                  background: '#012d42', border: '1px solid #153f53',
-                  fontSize: 10, fontWeight: 600, color: '#80b0c8',
-                  fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap',
-                  pointerEvents: 'none', zIndex: 10,
-                }}>
-                  Filtering
+            {activeBottomTab === 'CRITERIONS' ? (
+              <>
+                <TopTab tab={{ id: 'all',    label: 'ALL',    count: varCounts.all    }} active={varTypeTab === 'all'}    onClick={() => setVarTypeTab('all')}    />
+                <TopTab tab={{ id: 'Manual', label: 'MANUAL', count: varCounts.Manual }} active={varTypeTab === 'Manual'} onClick={() => setVarTypeTab('Manual')} />
+                <TopTab tab={{ id: 'Import', label: 'IMPORT', count: varCounts.Import }} active={varTypeTab === 'Import'} onClick={() => setVarTypeTab('Import')} />
+              </>
+            ) : (
+              <>
+                {TABS_TOP.map((tab, i) => (
+                  <React.Fragment key={tab.id}>
+                    {tab.id === 'mine' && (
+                      <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.15)', marginInline: 4 }} />
+                    )}
+                    <TopTab
+                      tab={tab}
+                      active={activeTopTab === tab.id}
+                      onClick={() => setActiveTopTab(tab.id)}
+                    />
+                  </React.Fragment>
+                ))}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setFilterOpen(o => !o)}
+                    onMouseEnter={() => setFilterHovered(true)}
+                    onMouseLeave={() => setFilterHovered(false)}
+                    style={{
+                      width: 28, height: 28, borderRadius: 6, border: 'none',
+                      background: filterOpen ? 'rgba(0,50,80,0.65)' : filterHovered ? 'rgba(0,70,102,0.2)' : 'transparent',
+                      color: filterOpen ? '#80d0f0' : filterHovered ? 'rgba(128,176,200,0.9)' : 'rgba(128,176,200,0.6)',
+                      cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                  >
+                    <FilterIcon />
+                    {activeFilterCount > 0 && (
+                      <div style={{
+                        position: 'absolute', top: 0, right: 0,
+                        width: 16, height: 16, borderRadius: 8,
+                        background: '#cc4422',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 9, fontWeight: 700, color: '#fff',
+                        fontFamily: "'Inter', sans-serif",
+                        boxShadow: '0 2px 6px rgba(180,40,20,0.55), 0 1px 2px rgba(0,0,0,0.3)',
+                        pointerEvents: 'none',
+                      }}>
+                        {activeFilterCount}
+                      </div>
+                    )}
+                  </button>
+                  {filterHovered && !filterOpen && (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                      marginTop: 4, padding: '3px 8px', borderRadius: 4,
+                      background: '#012d42', border: '1px solid #153f53',
+                      fontSize: 10, fontWeight: 600, color: '#80b0c8',
+                      fontFamily: "'Inter',sans-serif", whiteSpace: 'nowrap',
+                      pointerEvents: 'none', zIndex: 10,
+                    }}>
+                      Filtering
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* Spacer */}
@@ -768,113 +861,181 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
           borderRadius: 16, overflow: 'hidden',
           backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         }}>
-          {/* Filter panel */}
-          <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
-            <div className="filter-panel-inner">
-              <FilterPanel
-                filters={filters}
-                onChange={setFilters}
-                activeFilterCount={activeFilterCount}
-              />
-            </div>
-          </div>
+          {activeBottomTab === 'CRITERIONS' ? (
+            /* ── VARIABLES TABLE ── */
+            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+              <div style={{
+                display: 'flex', alignItems: 'center',
+                height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
+                background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
+              }}>
+                {VAR_COLUMNS.map(col => {
+                  const isActive = varSort.key === col.key;
+                  const isHovered = varHovCol === col.key;
+                  return (
+                    <div
+                      key={col.key}
+                      onClick={() => handleVarColSort(col.key)}
+                      onMouseEnter={() => setVarHovCol(col.key)}
+                      onMouseLeave={() => setVarHovCol(null)}
+                      style={{
+                        ...headerCell, flex: col.flex, minWidth: 0,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center',
+                        color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
+                        userSelect: 'none', transition: 'color 0.15s',
+                      }}
+                    >
+                      {col.label}
+                      {(isActive || isHovered) && <SortArrow active={isActive} dir={varSort.dir} />}
+                    </div>
+                  );
+                })}
+              </div>
 
-          {/* Table rows + sticky header inside same scroll container */}
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center',
-              height: 40, flexShrink: 0,
-              borderBottom: '1px solid #153f53',
-              background: 'rgb(1, 41, 64)',
-              position: 'sticky', top: 0, zIndex: 1,
-            }}>
-              {COLUMNS.map(col => {
-                const isActive = sort.key === col.key;
-                const isHovered = hoveredCol === col.key;
+              {sortedVariables.length === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No variables found</div>
+                </div>
+              )}
+
+              {sortedVariables.map((v, i) => {
+                const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                const hoverBg = 'rgba(0,70,102,0.2)';
                 return (
                   <div
-                    key={col.key}
-                    onClick={() => handleColSort(col.key)}
-                    onMouseEnter={() => setHoveredCol(col.key)}
-                    onMouseLeave={() => setHoveredCol(null)}
+                    key={v.code}
                     style={{
-                      ...headerCell, flex: col.flex, minWidth: 0,
-                      cursor: 'pointer',
                       display: 'flex', alignItems: 'center',
-                      color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                      userSelect: 'none',
-                      transition: 'color 0.15s',
+                      height: 36, flexShrink: 0,
+                      borderBottom: '1px solid rgba(21,63,83,0.5)',
+                      background: baseBg, transition: 'background 0.1s',
                     }}
+                    onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                    onMouseLeave={e => e.currentTarget.style.background = baseBg}
                   >
-                    {col.label}
-                    {(isActive || isHovered) && (
-                      <SortArrow active={isActive} dir={sort.dir} />
-                    )}
+                    <div style={{ ...cell, flex: 0.7, minWidth: 0 }}>
+                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700, color: 'rgba(128,176,200,0.7)', letterSpacing: 0.6 }}>{v.code}</span>
+                    </div>
+                    <div style={{ flex: 2.8, minWidth: 0, padding: '0 12px' }}>
+                      <div title={v.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.name}</div>
+                    </div>
+                    <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.created}</div>
+                    <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.modified}</div>
+                    <div style={{ flex: 2.2, minWidth: 0, padding: '0 12px' }}>
+                      <div title={v.source} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.source}</div>
+                    </div>
+                    <div style={{ flex: 1.5, minWidth: 0, padding: '0 12px' }}>
+                      <div title={v.author} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.author}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                      <VarTypeBadge type={v.type} />
+                    </div>
+                    <div style={{ ...cell, flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: '#ffffff' }}>{v.campaigns}</div>
+                    <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                      <VarStatusBadge status={v.status} />
+                    </div>
                   </div>
                 );
               })}
             </div>
-            {sortedCampaigns.length === 0 && (
-              <div style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                height: '100%', gap: 10, padding: '48px 0',
-              }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  <line x1="8" y1="11" x2="14" y2="11"/>
-                </svg>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>
-                  No results found
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>
-                  Try adjusting your search or filters
+          ) : (
+            /* ── CAMPAIGNS TABLE ── */
+            <>
+              <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
+                <div className="filter-panel-inner">
+                  <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
                 </div>
               </div>
-            )}
-            {sortedCampaigns.map((row, i) => {
-              const isCreated = row.statuses[0] === 'CREATED' || row.statuses[0] === 'CALCULATED';
-              const baseBg = isCreated
-                ? (i % 2 === 0 ? 'rgba(100,140,165,0.07)' : 'rgba(100,140,165,0.12)')
-                : (i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)');
-              const hoverBg = isCreated ? 'rgba(100,140,165,0.18)' : 'rgba(0,70,102,0.2)';
-              return (
-              <div
-                key={row.id}
-                style={{
-                  display: 'flex', alignItems: 'center',
-                  height: 32, flexShrink: 0,
-                  borderBottom: '1px solid rgba(21,63,83,0.5)',
-                  borderLeft: isCreated ? '2px solid rgba(128,176,200,0.35)' : '2px solid transparent',
-                  background: baseBg,
-                  cursor: 'pointer',
-                  transition: 'background 0.1s',
-                }}
-                onClick={() => handleCampaignOpen(row)}
-                onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                onMouseLeave={e => e.currentTarget.style.background = baseBg}
-              >
-                <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                  <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
-                </div>
-                <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
-                <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
-                <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.crit}</div>
-                <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                  <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
-                </div>
-                <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
-                  <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
-                </div>
-                <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
-                <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
-                <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                  <StatusBadge status={row.statuses[0]} />
-                </div>
-              </div>
-              );
-            })}
-          </div>
 
+              <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  height: 40, flexShrink: 0,
+                  borderBottom: '1px solid #153f53',
+                  background: 'rgb(1, 41, 64)',
+                  position: 'sticky', top: 0, zIndex: 1,
+                }}>
+                  {COLUMNS.map(col => {
+                    const isActive = sort.key === col.key;
+                    const isHovered = hoveredCol === col.key;
+                    return (
+                      <div
+                        key={col.key}
+                        onClick={() => handleColSort(col.key)}
+                        onMouseEnter={() => setHoveredCol(col.key)}
+                        onMouseLeave={() => setHoveredCol(null)}
+                        style={{
+                          ...headerCell, flex: col.flex, minWidth: 0,
+                          cursor: 'pointer',
+                          display: 'flex', alignItems: 'center',
+                          color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
+                          userSelect: 'none',
+                          transition: 'color 0.15s',
+                        }}
+                      >
+                        {col.label}
+                        {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                      </div>
+                    );
+                  })}
+                </div>
+                {sortedCampaigns.length === 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
+                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                      <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
+                  </div>
+                )}
+                {sortedCampaigns.map((row, i) => {
+                  const isCreated = row.statuses[0] === 'CREATED' || row.statuses[0] === 'CALCULATED';
+                  const baseBg = isCreated
+                    ? (i % 2 === 0 ? 'rgba(100,140,165,0.07)' : 'rgba(100,140,165,0.12)')
+                    : (i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)');
+                  const hoverBg = isCreated ? 'rgba(100,140,165,0.18)' : 'rgba(0,70,102,0.2)';
+                  return (
+                    <div
+                      key={row.id}
+                      style={{
+                        display: 'flex', alignItems: 'center',
+                        height: 32, flexShrink: 0,
+                        borderBottom: '1px solid rgba(21,63,83,0.5)',
+                        borderLeft: isCreated ? '2px solid rgba(128,176,200,0.35)' : '2px solid transparent',
+                        background: baseBg, cursor: 'pointer', transition: 'background 0.1s',
+                      }}
+                      onClick={() => handleCampaignOpen(row)}
+                      onMouseEnter={e => e.currentTarget.style.background = hoverBg}
+                      onMouseLeave={e => e.currentTarget.style.background = baseBg}
+                    >
+                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
+                      </div>
+                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
+                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
+                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.crit}</div>
+                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
+                      </div>
+                      <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
+                        <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
+                      </div>
+                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
+                      <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
+                      <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                        <StatusBadge status={row.statuses[0]} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         {/* ── Bottom tab bar (floating) ── */}

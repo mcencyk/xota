@@ -271,8 +271,9 @@ function IconBtn({ children, tooltip, danger, onClick }) {
 function ConfigField({ label, value, onChange, type = 'text' }) {
   const [focused, setFocused] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const isNum = type === 'number';
-  const floated = focused || String(value).length > 0;
+  const isNum  = type === 'number';
+  const isDate = type === 'date';
+  const floated = focused || isDate || String(value).length > 0;
   const borderColor = focused ? '#28779c' : hovered ? '#2a6a87' : '#16506c';
   const bgColor     = focused ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)';
   const shadow      = focused
@@ -302,7 +303,7 @@ function ConfigField({ label, value, onChange, type = 'text' }) {
         transition:'top 0.15s, font-size 0.15s, transform 0.15s, color 0.15s',
       }}>{label}</label>
       <input
-        type={isNum ? 'text' : type}
+        type={isDate ? 'date' : isNum ? 'text' : type}
         inputMode={isNum ? 'numeric' : undefined}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -314,6 +315,7 @@ function ConfigField({ label, value, onChange, type = 'text' }) {
           fontFamily:"'Inter', sans-serif", fontSize:13, fontWeight:500,
           color:'#ffffff', caretColor:'#ffffff',
           padding:'22px 12px 6px',
+          ...(isDate ? { colorScheme:'dark' } : {}),
         }}
       />
       {isNum && (
@@ -422,12 +424,26 @@ function VehicleConfigModal({ vehicle, onClose }) {
   const [saveHov, setSaveHov] = useState(false);
 
   const [model,  setModel]  = useState(vehicle.model);
-  const [year,   setYear]   = useState(String(vehicle.year));
   const [sw,     setSw]     = useState(vehicle.sw);
   const [chip,   setChip]   = useState(vehicle.chip);
   const [status, setStatus] = useState(vehicle.status);
 
-  const changed = model !== vehicle.model || year !== String(vehicle.year) ||
+  const initProdDate = (() => {
+    const m = String(1 + ((vehicle.id * 7)  % 12)).padStart(2,'0');
+    const d = String(1 + ((vehicle.id * 13) % 28)).padStart(2,'0');
+    return `${vehicle.year}-${m}-${d}`;
+  })();
+  const [prodDate, setProdDate] = useState(initProdDate);
+
+  const authCode = `${vehicle.vin.slice(0,4)}-${vehicle.vin.slice(4,8)}-${vehicle.vin.slice(8,12)}`;
+  const connectedDate = (() => {
+    const base = new Date(initProdDate);
+    const offset = 30 + ((vehicle.id * 17) % 90);
+    const d = new Date(base.getTime() + offset * 86400000);
+    return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  })();
+
+  const changed = model !== vehicle.model || prodDate !== initProdDate ||
                   sw !== vehicle.sw || chip !== vehicle.chip || status !== vehicle.status;
 
   function handleClose() { setClosing(true); }
@@ -491,18 +507,30 @@ function VehicleConfigModal({ vehicle, onClose }) {
           </div>
         </div>
 
-        {/* VIN (read-only) */}
+        {/* Read-only info row */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12 }}>
+          <div style={{ background:'rgba(0,70,102,0.14)', border:'1px solid #16506c', borderRadius:8, padding:'10px 12px', display:'flex', flexDirection:'column', gap:3, gridColumn:'1 / 3' }}>
+            <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:0.8, textTransform:'uppercase' }}>VIN</span>
+            <span style={{ fontSize:13, fontWeight:500, color:'rgba(204,223,233,0.55)', fontFamily:"'Inter', sans-serif" }}>{vehicle.vin}</span>
+          </div>
+          <div style={{ background:'rgba(0,70,102,0.14)', border:'1px solid #16506c', borderRadius:8, padding:'10px 12px', display:'flex', flexDirection:'column', gap:3 }}>
+            <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:0.8, textTransform:'uppercase' }}>Connected</span>
+            <span style={{ fontSize:13, fontWeight:500, color:'rgba(204,223,233,0.55)', fontFamily:"'Inter', sans-serif" }}>{connectedDate}</span>
+          </div>
+        </div>
+
+        {/* Authentication code (read-only) */}
         <div style={{ background:'rgba(0,70,102,0.14)', border:'1px solid #16506c', borderRadius:8, padding:'10px 12px', display:'flex', flexDirection:'column', gap:3 }}>
-          <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:0.8, textTransform:'uppercase' }}>VIN</span>
-          <span style={{ fontSize:13, fontWeight:500, color:'rgba(204,223,233,0.55)', fontFamily:"'Inter', sans-serif" }}>{vehicle.vin}</span>
+          <span style={{ fontSize:9, fontWeight:700, color:'rgba(128,176,200,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:0.8, textTransform:'uppercase' }}>Authentication Code</span>
+          <span style={{ fontSize:13, fontWeight:600, color:'rgba(204,223,233,0.55)', fontFamily:"'Inter', sans-serif", letterSpacing:1.5 }}>{authCode}</span>
         </div>
 
         {/* Fields grid */}
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-          <ConfigField label="Model"            value={model} onChange={setModel} />
-          <ConfigField label="Production Year"  value={year}  onChange={setYear}  type="number" />
-          <ConfigField label="Software Version" value={sw}    onChange={setSw} />
-          <ConfigField label="Chip Version"     value={chip}  onChange={setChip} />
+          <ConfigField label="Model"            value={model}    onChange={setModel} />
+          <ConfigField label="Production Date"  value={prodDate} onChange={setProdDate} type="date" />
+          <ConfigField label="Software Version" value={sw}       onChange={setSw} />
+          <ConfigField label="Chip Version"     value={chip}     onChange={setChip} />
           <div style={{ gridColumn:'1 / -1' }}>
             <ConfigSelect label="Status" value={status} options={['Active', 'Inactive']} onChange={setStatus} />
           </div>
@@ -754,8 +782,8 @@ export default function VehicleDetailView({ vehicle, onBack, onNavChange, active
           activeNav="people"
           onNavChange={nav => {
             if (nav === 'people') return;
-            const steps = nav === 'aftersales' ? LOAD_STEPS_FIELD : LOAD_STEPS_BACK;
-            const subtitle = nav === 'aftersales' ? 'Loading Field' : 'Loading Lab';
+            const steps = nav === 'field' ? LOAD_STEPS_FIELD : LOAD_STEPS_BACK;
+            const subtitle = nav === 'field' ? 'Loading Field' : 'Loading Lab';
             triggerLoader(steps, subtitle, () => { if (onNavChange) onNavChange(nav); });
           }}
           attentionCount={11}

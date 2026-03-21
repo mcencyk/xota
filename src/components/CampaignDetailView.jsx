@@ -2007,7 +2007,7 @@ function BackButton({ onClick, label }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function CampaignDetailView({ campaign, onBack, activeBrand, onBrandChange, onLogout, isTest, onExternalNavChange }) {
-  const [activeNav, setActiveNav] = useState(isTest ? 'people' : 'aftersales');
+  const [activeNav, setActiveNav] = useState(isTest ? 'people' : 'field');
   const [activeTab, setActiveTab] = useState('OVERVIEW');
   const [configureOpen, setConfigureOpen] = useState(false);
   const [abortOpen, setAbortOpen] = useState(false);

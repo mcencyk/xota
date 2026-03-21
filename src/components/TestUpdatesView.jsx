@@ -54,7 +54,7 @@ const TABS_TOP = [
 
 const TABS_BOTTOM = [
   { id: 'CAMPAIGNS', label: 'CAMPAIGNS', tooltip: 'New Lab Campaign' },
-  { id: 'VEHICLES',  label: 'VEHICLES',  tooltip: 'New Vehicle'       },
+  { id: 'VEHICLES',  label: 'VEHICLES',  tooltip: 'New Vehicle'      },
 ];
 
 const BRAND_MODELS = {
@@ -474,7 +474,7 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
 
   function handleExternalNavChange(nav) {
     setSelectedCampaign(null);
-    triggerBackLoader(nav === 'aftersales' ? 'Loading Field' : 'Returning to Lab', () => onNavChange(nav));
+    triggerBackLoader(nav === 'field' ? 'Loading Field' : 'Returning to Lab', () => onNavChange(nav));
   }
 
   if (selectedVehicle) {
@@ -576,10 +576,10 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
       backgroundColor: '#003050',
       padding: 24, gap: 24, boxSizing: 'border-box', overflow: 'hidden',
     }}>
-      <Sidebar activeNav={activeNav} onNavChange={nav => { if (nav !== activeNav) triggerBackLoader(nav === 'aftersales' ? 'Loading Field' : 'Returning to Lab', () => onNavChange(nav)); }} attentionCount={11} testAttentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout}
+      <Sidebar activeNav={activeNav} onNavChange={nav => { if (nav !== activeNav) triggerBackLoader(nav === 'field' ? 'Loading Field' : 'Returning to Lab', () => onNavChange(nav)); }} attentionCount={11} testAttentionCount={TAB_TOTAL.attention} activeBrand={activeBrand} onBrandChange={onBrandChange} onLogout={onLogout}
         onOpenCampaign={(campaignId, isTest) => {
           if (isTest) { const c = TEST_CAMPAIGNS.find(x => x.id === campaignId); if (c) handleCampaignOpen(c); }
-          else { triggerBackLoader('Loading Field', () => onNavChange('aftersales')); }
+          else { triggerBackLoader('Loading Field', () => onNavChange('field')); }
         }}
       />
 
