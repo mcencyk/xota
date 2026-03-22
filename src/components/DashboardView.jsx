@@ -661,7 +661,54 @@ function VarDeleteModal({ variable, onClose, onConfirm }) {
   );
 }
 
-function FileRow({ file, isCurrent }) {
+function FileRemoveModal({ file, onClose, onConfirm }) {
+  const [closing, setClosing] = useState(false);
+  const [closeHov, setCloseHov] = useState(false);
+  const [cancelHov, setCancelHov] = useState(false);
+  const [removeHov, setRemoveHov] = useState(false);
+  function handleClose() { setClosing(true); }
+  return (
+    <>
+      <div onClick={handleClose} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,46,67,0.75)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', animation: closing ? 'backdropFadeOut 0.18s ease forwards' : 'backdropFadeIn 0.22s ease' }} />
+      <div onAnimationEnd={() => { if (closing) onClose(); }}
+        style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 568, background: 'rgba(1,45,66,0.75)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid #153f53', borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', gap: 24, boxShadow: '0px 0px 16px 0px rgba(0,0,0,0.16)', zIndex: 201, boxSizing: 'border-box', animation: closing ? 'modalFadeOut 0.18s ease forwards' : 'modalFadeIn 0.22s ease forwards' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 20, fontWeight: 600, color: '#ffffff', fontFamily: "'Montserrat', sans-serif", letterSpacing: 0.4 }}>Remove Source File</span>
+          <div style={{ position: 'relative' }}>
+            <button onClick={handleClose} onMouseEnter={() => setCloseHov(true)} onMouseLeave={() => setCloseHov(false)}
+              style={{ width: 24, height: 24, background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: closeHov ? 'rgba(204,223,233,0.9)' : 'rgba(128,176,200,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.15s' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            {closeHov && <div style={{ position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%', transform: 'translateX(-50%)', padding: '3px 8px', borderRadius: 4, background: '#012d42', border: '1px solid #153f53', fontSize: 10, fontWeight: 600, color: '#80b0c8', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap', pointerEvents: 'none', zIndex: 210 }}>Close</div>}
+          </div>
+        </div>
+        {/* Body */}
+        <div style={{ background: '#012d42', border: '1px solid #153f53', borderRadius: 16, padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 12, boxShadow: '0px 0px 2px 0px rgba(0,0,0,0.24)' }}>
+          <p style={{ fontSize: 12, fontWeight: 500, color: '#ccdfe9', fontFamily: "'Inter', sans-serif", lineHeight: '20px', margin: 0 }}>
+            Removing this source file will permanently delete it from the variable's history. This action cannot be undone.
+          </p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: '#ffffff', fontFamily: "'Inter', sans-serif", lineHeight: '22px', margin: 0 }}>
+            Are you sure you want to remove <span style={{ fontWeight: 700 }}>{file.name}</span>?
+          </p>
+        </div>
+        {/* Footer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={handleClose} onMouseEnter={() => setCancelHov(true)} onMouseLeave={() => setCancelHov(false)}
+            style={{ padding: '10px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: '#ccdfe9', background: cancelHov ? '#013d58' : '#012d42', border: '1px solid #004666', cursor: 'pointer', transition: 'background 0.15s' }}>
+            Cancel
+          </button>
+          <button onClick={() => { onConfirm?.(); handleClose(); }} onMouseEnter={() => setRemoveHov(true)} onMouseLeave={() => setRemoveHov(false)}
+            style={{ padding: '10px 18px', borderRadius: 8, fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: removeHov ? '#ff6060' : '#cc4433', background: removeHov ? 'rgba(180,40,40,0.35)' : 'rgba(180,40,40,0.2)', border: `1px solid ${removeHov ? 'rgba(200,60,60,0.5)' : 'rgba(180,40,40,0.35)'}`, cursor: 'pointer', transition: 'all 0.15s' }}>
+            Remove
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function FileRow({ file, isCurrent, onRemove }) {
   const [hov, setHov] = useState(false);
   const [dlState, setDlState] = useState('idle'); // idle | loading | done
 
@@ -673,6 +720,8 @@ function FileRow({ file, isCurrent }) {
       setTimeout(() => setDlState('idle'), 1000);
     }, 1400);
   }
+
+  const showActions = hov || dlState !== 'idle';
 
   return (
     <div
@@ -689,24 +738,40 @@ function FileRow({ file, isCurrent }) {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
         <VarTypeBadge type={file.type} />
       </div>
-      {/* Download button — visible on hover */}
-      <div style={{ width: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {(hov || dlState !== 'idle') && (
-          <button onClick={handleDownload}
-            style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: dlState === 'done' ? 'rgba(40,140,80,0.2)' : 'rgba(40,160,200,0.15)', color: dlState === 'done' ? '#38b060' : '#28a0c8', cursor: dlState === 'idle' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', padding: 0 }}>
-            {dlState === 'loading' && (
-              <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(40,160,200,0.25)', borderTopColor: '#28a0c8', animation: 'iteruSpin 0.75s linear infinite' }} />
-            )}
-            {dlState === 'done' && (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            )}
-            {dlState === 'idle' && (
+      {/* Action buttons — visible on hover */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 60, justifyContent: 'flex-end', flexShrink: 0 }}>
+        {/* Remove — only for non-current files */}
+        <div style={{ width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {showActions && !isCurrent && (
+            <button onClick={onRemove}
+              style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: 'rgba(180,40,40,0.15)', color: '#cc4433', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', padding: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(180,40,40,0.28)'; e.currentTarget.style.color = '#ff6060'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(180,40,40,0.15)'; e.currentTarget.style.color = '#cc4433'; }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
               </svg>
-            )}
-          </button>
-        )}
+            </button>
+          )}
+        </div>
+        {/* Download */}
+        <div style={{ width: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {showActions && (
+            <button onClick={handleDownload}
+              style={{ width: 24, height: 24, borderRadius: 6, border: 'none', background: dlState === 'done' ? 'rgba(40,140,80,0.2)' : 'rgba(40,160,200,0.15)', color: dlState === 'done' ? '#38b060' : '#28a0c8', cursor: dlState === 'idle' ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s', padding: 0 }}>
+              {dlState === 'loading' && (
+                <div style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid rgba(40,160,200,0.25)', borderTopColor: '#28a0c8', animation: 'iteruSpin 0.75s linear infinite' }} />
+              )}
+              {dlState === 'done' && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              )}
+              {dlState === 'idle' && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -715,6 +780,7 @@ function FileRow({ file, isCurrent }) {
 function VariableDetailView({ variable, onBack, onNavChange, activeBrand, onBrandChange, onLogout }) {
   const [paramsOpen, setParamsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [fileToRemove, setFileToRemove] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -821,7 +887,7 @@ function VariableDetailView({ variable, onBack, onNavChange, activeBrand, onBran
                 <div style={{ width: 28, flexShrink: 0 }} />
               </div>
               {files.map((f, i) => (
-                <FileRow key={i} file={f} isCurrent={i === 0} />
+                <FileRow key={i} file={f} isCurrent={i === 0} onRemove={i === 0 ? undefined : () => setFileToRemove(f)} />
               ))}
             </div>
           </div>
@@ -851,6 +917,7 @@ function VariableDetailView({ variable, onBack, onNavChange, activeBrand, onBran
       </div>
       {paramsOpen && <VarParamsModal variable={variable} onClose={() => setParamsOpen(false)} />}
       {deleteOpen && <VarDeleteModal variable={variable} onClose={() => setDeleteOpen(false)} onConfirm={onBack} />}
+      {fileToRemove && <FileRemoveModal file={fileToRemove} onClose={() => setFileToRemove(null)} onConfirm={() => setFileToRemove(null)} />}
     </>
   );
 }
@@ -1125,6 +1192,8 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     setSelectedCampaign(null);
     triggerBackLoader(nav === 'people' ? 'Loading Lab' : 'Returning to Field', () => setActiveNav(nav));
   }
+
+  function handleBottomTabChange(id) { setActiveBottomTab(id); }
 
   function handleSidebarNavChange(nav) {
     if (nav === activeNav) return;
@@ -1488,189 +1557,107 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
         </div>
 
         {/* ── Table area ── */}
-        <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          background: 'rgba(1,45,66,0.6)', border: '1px solid #153f53',
-          borderRadius: 16, overflow: 'hidden',
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-        }}>
-          {activeBottomTab === 'CRITERIONS' ? (
-            /* ── VARIABLES TABLE ── */
-            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-              <div style={{
-                display: 'flex', alignItems: 'center',
-                height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
-                background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
-              }}>
-                {VAR_COLUMNS.map(col => {
-                  const isActive = varSort.key === col.key;
-                  const isHovered = varHovCol === col.key;
-                  return (
-                    <div
-                      key={col.key}
-                      onClick={() => handleVarColSort(col.key)}
-                      onMouseEnter={() => setVarHovCol(col.key)}
-                      onMouseLeave={() => setVarHovCol(null)}
-                      style={{
-                        ...headerCell, flex: col.flex, minWidth: 0,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center',
-                        color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                        userSelect: 'none', transition: 'color 0.15s',
-                      }}
-                    >
-                      {col.label}
-                      {(isActive || isHovered) && <SortArrow active={isActive} dir={varSort.dir} />}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {sortedVariables.length === 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    <line x1="8" y1="11" x2="14" y2="11"/>
-                  </svg>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No variables found</div>
-                </div>
-              )}
-
-              {sortedVariables.map((v, i) => {
-                const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
-                const hoverBg = 'rgba(0,70,102,0.2)';
-                return (
-                  <div
-                    key={v.code}
-                    style={{
-                      display: 'flex', alignItems: 'center',
-                      height: 36, flexShrink: 0,
-                      borderBottom: '1px solid rgba(21,63,83,0.5)',
-                      background: baseBg, transition: 'background 0.1s', cursor: 'pointer',
-                    }}
-                    onClick={() => setSelectedVariable(v)}
-                    onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                    onMouseLeave={e => e.currentTarget.style.background = baseBg}
-                  >
-                    <div style={{ ...cell, flex: 0.7, minWidth: 0 }}>
-                      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700, color: 'rgba(128,176,200,0.7)', letterSpacing: 0.6 }}>{v.code}</span>
-                    </div>
-                    <div style={{ flex: 2.8, minWidth: 0, padding: '0 12px' }}>
-                      <div title={v.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.name}</div>
-                    </div>
-                    <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.created}</div>
-                    <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.modified}</div>
-                    <div style={{ flex: 2.2, minWidth: 0, padding: '0 12px' }}>
-                      <div title={v.source} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.source}</div>
-                    </div>
-                    <div style={{ flex: 1.5, minWidth: 0, padding: '0 12px' }}>
-                      <div title={v.author} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.author}</div>
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                      <VarTypeBadge type={v.type} />
-                    </div>
-                    <div style={{ ...cell, flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: '#ffffff' }}>{v.campaigns}</div>
-                    <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                      <VarStatusBadge status={v.status} />
-                    </div>
+        {(() => {
+          const isCamp = activeBottomTab === 'CAMPAIGNS';
+          const isCrit = activeBottomTab === 'CRITERIONS';
+          const T = 'opacity 0.26s ease, transform 0.26s cubic-bezier(0.22,1,0.36,1)';
+          const boxBase = { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: 'rgba(1,45,66,0.6)', border: '1px solid #153f53', borderRadius: 16, overflow: 'hidden', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', transition: T };
+          return (
+            <div style={{ flex: 1, position: 'relative', isolation: 'isolate' }}>
+              {/* CAMPAIGNS panel */}
+              <div style={{ ...boxBase, opacity: isCamp ? 1 : 0, transform: isCamp ? 'translateX(0)' : 'translateX(-28px)', zIndex: isCamp ? 2 : 1, pointerEvents: isCamp ? 'auto' : 'none' }}>
+                <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
+                  <div className="filter-panel-inner">
+                    <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
                   </div>
-                );
-              })}
-            </div>
-          ) : (
-            /* ── CAMPAIGNS TABLE ── */
-            <>
-              <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
-                <div className="filter-panel-inner">
-                  <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
                 </div>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center',
-                  height: 40, flexShrink: 0,
-                  borderBottom: '1px solid #153f53',
-                  background: 'rgb(1, 41, 64)',
-                  position: 'sticky', top: 0, zIndex: 1,
-                }}>
-                  {COLUMNS.map(col => {
-                    const isActive = sort.key === col.key;
-                    const isHovered = hoveredCol === col.key;
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', height: 40, flexShrink: 0, borderBottom: '1px solid #153f53', background: 'rgb(1,41,64)', position: 'sticky', top: 0, zIndex: 1 }}>
+                    {COLUMNS.map(col => {
+                      const isActive = sort.key === col.key;
+                      const isHovered = hoveredCol === col.key;
+                      return (
+                        <div key={col.key} onClick={() => handleColSort(col.key)} onMouseEnter={() => setHoveredCol(col.key)} onMouseLeave={() => setHoveredCol(null)}
+                          style={{ ...headerCell, flex: col.flex, minWidth: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)', userSelect: 'none', transition: 'color 0.15s' }}>
+                          {col.label}
+                          {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedCampaigns.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
+                      <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
+                    </div>
+                  )}
+                  {sortedCampaigns.map((row, i) => {
+                    const isCreated = row.statuses[0] === 'CREATED' || row.statuses[0] === 'CALCULATED';
+                    const baseBg = isCreated ? (i % 2 === 0 ? 'rgba(100,140,165,0.07)' : 'rgba(100,140,165,0.12)') : (i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)');
+                    const hoverBg = isCreated ? 'rgba(100,140,165,0.18)' : 'rgba(0,70,102,0.2)';
                     return (
-                      <div
-                        key={col.key}
-                        onClick={() => handleColSort(col.key)}
-                        onMouseEnter={() => setHoveredCol(col.key)}
-                        onMouseLeave={() => setHoveredCol(null)}
-                        style={{
-                          ...headerCell, flex: col.flex, minWidth: 0,
-                          cursor: 'pointer',
-                          display: 'flex', alignItems: 'center',
-                          color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                          userSelect: 'none',
-                          transition: 'color 0.15s',
-                        }}
-                      >
-                        {col.label}
-                        {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                      <div key={row.id} style={{ display: 'flex', alignItems: 'center', height: 32, flexShrink: 0, borderBottom: '1px solid rgba(21,63,83,0.5)', borderLeft: isCreated ? '2px solid rgba(128,176,200,0.35)' : '2px solid transparent', background: baseBg, cursor: 'pointer', transition: 'background 0.1s' }}
+                        onClick={() => handleCampaignOpen(row)} onMouseEnter={e => e.currentTarget.style.background = hoverBg} onMouseLeave={e => e.currentTarget.style.background = baseBg}>
+                        <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}><div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div></div>
+                        <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
+                        <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
+                        <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.crit}</div>
+                        <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}><div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div></div>
+                        <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}><div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div></div>
+                        <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
+                        <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
+                        <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><StatusBadge status={row.statuses[0]} /></div>
                       </div>
                     );
                   })}
                 </div>
-                {sortedCampaigns.length === 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                      <line x1="8" y1="11" x2="14" y2="11"/>
-                    </svg>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
-                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
-                  </div>
-                )}
-                {sortedCampaigns.map((row, i) => {
-                  const isCreated = row.statuses[0] === 'CREATED' || row.statuses[0] === 'CALCULATED';
-                  const baseBg = isCreated
-                    ? (i % 2 === 0 ? 'rgba(100,140,165,0.07)' : 'rgba(100,140,165,0.12)')
-                    : (i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)');
-                  const hoverBg = isCreated ? 'rgba(100,140,165,0.18)' : 'rgba(0,70,102,0.2)';
-                  return (
-                    <div
-                      key={row.id}
-                      style={{
-                        display: 'flex', alignItems: 'center',
-                        height: 32, flexShrink: 0,
-                        borderBottom: '1px solid rgba(21,63,83,0.5)',
-                        borderLeft: isCreated ? '2px solid rgba(128,176,200,0.35)' : '2px solid transparent',
-                        background: baseBg, cursor: 'pointer', transition: 'background 0.1s',
-                      }}
-                      onClick={() => handleCampaignOpen(row)}
-                      onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                      onMouseLeave={e => e.currentTarget.style.background = baseBg}
-                    >
-                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
-                      </div>
-                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
-                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
-                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.crit}</div>
-                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
-                      </div>
-                      <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
-                      </div>
-                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
-                      <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
-                      <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                        <StatusBadge status={row.statuses[0]} />
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
-            </>
-          )}
-        </div>
+              {/* VARIABLES panel */}
+              <div style={{ ...boxBase, opacity: isCrit ? 1 : 0, transform: isCrit ? 'translateX(0)' : 'translateX(28px)', zIndex: isCrit ? 2 : 1, pointerEvents: isCrit ? 'auto' : 'none' }}>
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', height: 40, flexShrink: 0, borderBottom: '1px solid #153f53', background: 'rgb(1,41,64)', position: 'sticky', top: 0, zIndex: 1 }}>
+                    {VAR_COLUMNS.map(col => {
+                      const isActive = varSort.key === col.key;
+                      const isHovered = varHovCol === col.key;
+                      return (
+                        <div key={col.key} onClick={() => handleVarColSort(col.key)} onMouseEnter={() => setVarHovCol(col.key)} onMouseLeave={() => setVarHovCol(null)}
+                          style={{ ...headerCell, flex: col.flex, minWidth: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)', userSelect: 'none', transition: 'color 0.15s' }}>
+                          {col.label}
+                          {(isActive || isHovered) && <SortArrow active={isActive} dir={varSort.dir} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedVariables.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No variables found</div>
+                    </div>
+                  )}
+                  {sortedVariables.map((v, i) => {
+                    const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                    const hoverBg = 'rgba(0,70,102,0.2)';
+                    return (
+                      <div key={v.code} style={{ display: 'flex', alignItems: 'center', height: 36, flexShrink: 0, borderBottom: '1px solid rgba(21,63,83,0.5)', background: baseBg, transition: 'background 0.1s', cursor: 'pointer' }}
+                        onClick={() => setSelectedVariable(v)} onMouseEnter={e => e.currentTarget.style.background = hoverBg} onMouseLeave={e => e.currentTarget.style.background = baseBg}>
+                        <div style={{ ...cell, flex: 0.7, minWidth: 0 }}><span style={{ fontFamily: "'Inter',sans-serif", fontSize: 11, fontWeight: 700, color: 'rgba(128,176,200,0.7)', letterSpacing: 0.6 }}>{v.code}</span></div>
+                        <div style={{ flex: 2.8, minWidth: 0, padding: '0 12px' }}><div title={v.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.name}</div></div>
+                        <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.created}</div>
+                        <div style={{ ...cell, flex: 1.3, minWidth: 0, color: 'rgba(204,223,233,0.7)', fontSize: 11 }}>{v.modified}</div>
+                        <div style={{ flex: 2.2, minWidth: 0, padding: '0 12px' }}><div title={v.source} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.65)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.source}</div></div>
+                        <div style={{ flex: 1.5, minWidth: 0, padding: '0 12px' }}><div title={v.author} style={{ ...cell, padding: 0, fontSize: 11, color: 'rgba(204,223,233,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.author}</div></div>
+                        <div style={{ flex: 1, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><VarTypeBadge type={v.type} /></div>
+                        <div style={{ ...cell, flex: 1, minWidth: 0, fontSize: 12, fontWeight: 600, color: '#ffffff' }}>{v.campaigns}</div>
+                        <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><VarStatusBadge status={v.status} /></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Bottom tab bar (floating) ── */}
         <div style={{
@@ -1690,8 +1677,8 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
               label={tab.label}
               tooltip={tab.tooltip}
               active={activeBottomTab === tab.id}
-              onClick={() => setActiveBottomTab(tab.id)}
-              onPlus={tab.id === 'CRITERIONS' ? () => { setActiveBottomTab('CRITERIONS'); setAddVariableOpen(true); } : undefined}
+              onClick={() => handleBottomTabChange(tab.id)}
+              onPlus={tab.id === 'CRITERIONS' ? () => { handleBottomTabChange('CRITERIONS'); setAddVariableOpen(true); } : undefined}
             />
           ))}
         </div>

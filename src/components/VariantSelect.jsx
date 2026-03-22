@@ -27,9 +27,9 @@ export default function VariantSelect({ brandName, variants, selected, onSelect 
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          height: 32, padding: '4px 8px',
-          borderRadius: 6,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          height: 52, padding: '0 12px',
+          borderRadius: 8,
           border: open ? '1px solid #28779c' : hovered ? '1px solid #2a6a87' : '1px solid #16506c',
           background: open ? 'rgba(0,70,102,0.24)' : hovered ? 'rgba(0,70,102,0.22)' : 'rgba(0,70,102,0.16)',
           boxShadow: open
@@ -39,18 +39,26 @@ export default function VariantSelect({ brandName, variants, selected, onSelect 
           transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
         }}
       >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0, flex: 1 }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase',
+            color: 'rgba(128,176,200,0.55)', fontFamily: "'Inter', sans-serif",
+          }}>
+            Variant
+          </span>
+          <span style={{
+            fontSize: 13, fontWeight: 500, color: '#ffffff',
+            fontFamily: "'Inter', sans-serif",
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {brandName} {selected}
+          </span>
+        </div>
         <span style={{
-          flex: 1, fontSize: 12, fontWeight: 500, lineHeight: '16px',
-          color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {brandName} {selected}
-        </span>
-        <span style={{
-          color: '#80b0c8', opacity: 0.6, flexShrink: 0,
+          color: '#80b0c8', opacity: open ? 1 : 0.6, flexShrink: 0,
           transform: open ? 'rotate(180deg)' : 'none',
           transition: 'transform 0.2s, opacity 0.15s',
           display: 'flex',
-          ...(open ? { opacity: 1 } : {}),
         }}>
           <ChevronIcon />
         </span>

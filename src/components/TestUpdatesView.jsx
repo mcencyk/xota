@@ -773,6 +773,8 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
     });
   }, [filteredVehicles, vehicleSort]);
 
+  function handleBottomTabChange(id) { setActiveBottomTab(id); }
+
   function handleVehicleColSort(key) {
     setVehicleSort(prev => prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' });
   }
@@ -1087,189 +1089,109 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
         </div>
 
         {/* Table area */}
-        <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column',
-          background: 'rgba(1,45,66,0.6)', border: '1px solid #153f53',
-          borderRadius: 16, overflow: 'hidden',
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-        }}>
-          {activeBottomTab === 'CAMPAIGNS' ? (
-            <>
-              <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
-                <div className="filter-panel-inner">
-                  <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
+        {(() => {
+          const isCamp = activeBottomTab === 'CAMPAIGNS';
+          const isVeh = activeBottomTab === 'VEHICLES';
+          const T = 'opacity 0.26s ease, transform 0.26s cubic-bezier(0.22,1,0.36,1)';
+          const boxBase = { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: 'rgba(1,45,66,0.6)', border: '1px solid #153f53', borderRadius: 16, overflow: 'hidden', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', transition: T };
+          return (
+            <div style={{ flex: 1, position: 'relative', isolation: 'isolate' }}>
+              {/* CAMPAIGNS panel */}
+              <div style={{ ...boxBase, opacity: isCamp ? 1 : 0, transform: isCamp ? 'translateX(0)' : 'translateX(-28px)', zIndex: isCamp ? 2 : 1, pointerEvents: isCamp ? 'auto' : 'none' }}>
+                <div className={`filter-panel-wrapper${filterOpen ? ' open' : ''}`}>
+                  <div className="filter-panel-inner">
+                    <FilterPanel filters={filters} onChange={setFilters} activeFilterCount={activeFilterCount} />
+                  </div>
                 </div>
-              </div>
-
-              <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-                {/* Header row */}
-                <div style={{
-                  display: 'flex', alignItems: 'center',
-                  height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
-                  background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
-                }}>
-                  {COLUMNS.map(col => {
-                    const isActive = sort.key === col.key;
-                    const isHovered = hoveredCol === col.key;
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', height: 40, flexShrink: 0, borderBottom: '1px solid #153f53', background: 'rgb(1,41,64)', position: 'sticky', top: 0, zIndex: 1 }}>
+                    {COLUMNS.map(col => {
+                      const isActive = sort.key === col.key;
+                      const isHovered = hoveredCol === col.key;
+                      return (
+                        <div key={col.key} onClick={() => handleColSort(col.key)} onMouseEnter={() => setHoveredCol(col.key)} onMouseLeave={() => setHoveredCol(null)}
+                          style={{ ...headerCell, flex: col.flex, minWidth: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)', userSelect: 'none', transition: 'color 0.15s' }}>
+                          {col.label}
+                          {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedCampaigns.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
+                      <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
+                    </div>
+                  )}
+                  {sortedCampaigns.map((row, i) => {
+                    const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                    const hoverBg = 'rgba(0,70,102,0.2)';
                     return (
-                      <div
-                        key={col.key}
-                        onClick={() => handleColSort(col.key)}
-                        onMouseEnter={() => setHoveredCol(col.key)}
-                        onMouseLeave={() => setHoveredCol(null)}
-                        style={{
-                          ...headerCell, flex: col.flex, minWidth: 0,
-                          cursor: 'pointer', display: 'flex', alignItems: 'center',
-                          color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                          userSelect: 'none', transition: 'color 0.15s',
-                        }}
-                      >
-                        {col.label}
-                        {(isActive || isHovered) && <SortArrow active={isActive} dir={sort.dir} />}
+                      <div key={row.id} style={{ display: 'flex', alignItems: 'center', height: 32, flexShrink: 0, borderBottom: '1px solid rgba(21,63,83,0.5)', borderLeft: '2px solid transparent', background: baseBg, cursor: 'pointer', transition: 'background 0.1s' }}
+                        onClick={() => handleCampaignOpen(row)} onMouseEnter={e => e.currentTarget.style.background = hoverBg} onMouseLeave={e => e.currentTarget.style.background = baseBg}>
+                        <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}><div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div></div>
+                        <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
+                        <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
+                        <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}><div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div></div>
+                        <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}><div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div></div>
+                        <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
+                        <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
+                        <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><StatusBadge status={row.statuses[0]} /></div>
                       </div>
                     );
                   })}
                 </div>
-
-                {sortedCampaigns.length === 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                      <line x1="8" y1="11" x2="14" y2="11"/>
-                    </svg>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No results found</div>
-                    <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters</div>
-                  </div>
-                )}
-
-                {sortedCampaigns.map((row, i) => {
-                  const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
-                  const hoverBg = 'rgba(0,70,102,0.2)';
-                  return (
-                    <div
-                      key={row.id}
-                      style={{
-                        display: 'flex', alignItems: 'center',
-                        height: 32, flexShrink: 0,
-                        borderBottom: '1px solid rgba(21,63,83,0.5)',
-                        borderLeft: '2px solid transparent',
-                        background: baseBg, cursor: 'pointer', transition: 'background 0.1s',
-                      }}
-                      onClick={() => handleCampaignOpen(row)}
-                      onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                      onMouseLeave={e => e.currentTarget.style.background = baseBg}
-                    >
-                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.name} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</div>
-                      </div>
-                      <div style={{ ...cell, flex: 1, minWidth: 0 }}>{row.vehicles}</div>
-                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.code}</div>
-                      <div style={{ flex: 3, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.spec || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.spec || '–'}</div>
-                      </div>
-                      <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
-                        <div title={row.measure || '–'} style={{ ...cell, padding: 0, fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.measure || '–'}</div>
-                      </div>
-                      <div style={{ ...cell, flex: 1.2, minWidth: 0 }}>{row.type}</div>
-                      <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{row.date}</div>
-                      <div style={{ flex: 2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                        <StatusBadge status={row.statuses[0]} />
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
-            </>
-          ) : (
-            /* VEHICLES TABLE */
-            <>
-              <div className={`filter-panel-wrapper${vehicleFilterOpen ? ' open' : ''}`}>
-                <div className="filter-panel-inner">
-                  <VehicleFilterPanel
-                    filters={vehicleFilters}
-                    onChange={setVehicleFilters}
-                    activeFilterCount={activeVehicleFilterCount}
-                    brandModels={BRAND_MODELS[activeBrand?.id] || BRAND_MODELS.vw}
-                  />
+              {/* VEHICLES panel */}
+              <div style={{ ...boxBase, opacity: isVeh ? 1 : 0, transform: isVeh ? 'translateX(0)' : 'translateX(28px)', zIndex: isVeh ? 2 : 1, pointerEvents: isVeh ? 'auto' : 'none' }}>
+                <div className={`filter-panel-wrapper${vehicleFilterOpen ? ' open' : ''}`}>
+                  <div className="filter-panel-inner">
+                    <VehicleFilterPanel filters={vehicleFilters} onChange={setVehicleFilters} activeFilterCount={activeVehicleFilterCount} brandModels={BRAND_MODELS[activeBrand?.id] || BRAND_MODELS.vw} />
+                  </div>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', height: 40, flexShrink: 0, borderBottom: '1px solid #153f53', background: 'rgb(1,41,64)', position: 'sticky', top: 0, zIndex: 1 }}>
+                    {VEH_COLUMNS.map(col => {
+                      const isActive = vehicleSort.key === col.key;
+                      const isHovered = vehicleHovCol === col.key;
+                      return (
+                        <div key={col.key} onClick={() => handleVehicleColSort(col.key)} onMouseEnter={() => setVehicleHovCol(col.key)} onMouseLeave={() => setVehicleHovCol(null)}
+                          style={{ ...headerCell, flex: col.flex, minWidth: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)', userSelect: 'none', transition: 'color 0.15s' }}>
+                          {col.label}
+                          {(isActive || isHovered) && <SortArrow active={isActive} dir={vehicleSort.dir} />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {sortedVehicles.length === 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No vehicles found</div>
+                      <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filter</div>
+                    </div>
+                  )}
+                  {sortedVehicles.map((v, i) => {
+                    const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
+                    const hoverBg = 'rgba(0,70,102,0.2)';
+                    return (
+                      <div key={v.id} style={{ display: 'flex', alignItems: 'center', height: 32, flexShrink: 0, borderBottom: '1px solid rgba(21,63,83,0.5)', background: baseBg, transition: 'background 0.1s', cursor: 'pointer' }}
+                        onClick={() => handleVehicleOpen(v)} onMouseEnter={e => e.currentTarget.style.background = hoverBg} onMouseLeave={e => e.currentTarget.style.background = baseBg}>
+                        <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}><div title={v.vin} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.vin}</div></div>
+                        <div style={{ ...cell, flex: 1.8, minWidth: 0 }}>{v.model}</div>
+                        <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{v.year}</div>
+                        <div style={{ ...cell, flex: 1.5, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 11 }}>{v.sw}</div>
+                        <div style={{ ...cell, flex: 1.6, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 10 }}>{v.chip}</div>
+                        <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><VehicleStatusBadge status={v.status} /></div>
+                        <div style={{ flex: 1.4, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}><AuthStatusBadge auth={v.auth} /></div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-            <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: 64 }}>
-              {/* Header row */}
-              <div style={{
-                display: 'flex', alignItems: 'center',
-                height: 40, flexShrink: 0, borderBottom: '1px solid #153f53',
-                background: 'rgb(1, 41, 64)', position: 'sticky', top: 0, zIndex: 1,
-              }}>
-                {VEH_COLUMNS.map(col => {
-                  const isActive = vehicleSort.key === col.key;
-                  const isHovered = vehicleHovCol === col.key;
-                  return (
-                    <div
-                      key={col.key}
-                      onClick={() => handleVehicleColSort(col.key)}
-                      onMouseEnter={() => setVehicleHovCol(col.key)}
-                      onMouseLeave={() => setVehicleHovCol(null)}
-                      style={{
-                        ...headerCell, flex: col.flex, minWidth: 0,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center',
-                        color: isActive ? 'rgba(128,176,200,0.95)' : isHovered ? 'rgba(128,176,200,0.8)' : 'rgba(128,176,200,0.6)',
-                        userSelect: 'none', transition: 'color 0.15s',
-                      }}
-                    >
-                      {col.label}
-                      {(isActive || isHovered) && <SortArrow active={isActive} dir={vehicleSort.dir} />}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {sortedVehicles.length === 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 10, padding: '48px 0' }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(128,176,200,0.25)" strokeWidth="1.5" strokeLinecap="round">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    <line x1="8" y1="11" x2="14" y2="11"/>
-                  </svg>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(128,176,200,0.45)', fontFamily: "'Inter', sans-serif" }}>No vehicles found</div>
-                  <div style={{ fontSize: 11, fontWeight: 400, color: 'rgba(128,176,200,0.3)', fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filter</div>
-                </div>
-              )}
-
-              {sortedVehicles.map((v, i) => {
-                const baseBg = i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.15)';
-                const hoverBg = 'rgba(0,70,102,0.2)';
-                return (
-                  <div
-                    key={v.id}
-                    style={{
-                      display: 'flex', alignItems: 'center',
-                      height: 32, flexShrink: 0,
-                      borderBottom: '1px solid rgba(21,63,83,0.5)',
-                      background: baseBg, transition: 'background 0.1s', cursor: 'pointer',
-                    }}
-                    onClick={() => handleVehicleOpen(v)}
-                    onMouseEnter={e => e.currentTarget.style.background = hoverBg}
-                    onMouseLeave={e => e.currentTarget.style.background = baseBg}
-                  >
-                    <div style={{ flex: 2.5, minWidth: 0, padding: '0 12px' }}>
-                      <div title={v.vin} style={{ ...cell, padding: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.vin}</div>
-                    </div>
-                    <div style={{ ...cell, flex: 1.8, minWidth: 0 }}>{v.model}</div>
-                    <div style={{ ...cell, flex: 1.4, minWidth: 0 }}>{v.year}</div>
-                    <div style={{ ...cell, flex: 1.5, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 11 }}>{v.sw}</div>
-                    <div style={{ ...cell, flex: 1.6, minWidth: 0, color: 'rgba(128,176,200,0.85)', fontSize: 10 }}>{v.chip}</div>
-                    <div style={{ flex: 1.2, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                      <VehicleStatusBadge status={v.status} />
-                    </div>
-                    <div style={{ flex: 1.4, minWidth: 0, padding: '0 8px', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                      <AuthStatusBadge auth={v.auth} />
-                    </div>
-                  </div>
-                );
-              })}
             </div>
-            </>
-          )}
-        </div>
+          );
+        })()}
 
         {/* Bottom floating bar — no VARIABLES tab */}
         <div style={{
@@ -1287,8 +1209,8 @@ export default function TestUpdatesView({ activeNav, onNavChange, activeBrand, o
               label={tab.label}
               tooltip={tab.tooltip}
               active={activeBottomTab === tab.id}
-              onClick={() => setActiveBottomTab(tab.id)}
-              onPlus={tab.id === 'VEHICLES' ? () => { setActiveBottomTab('VEHICLES'); setAddVehicleOpen(true); } : undefined}
+              onClick={() => handleBottomTabChange(tab.id)}
+              onPlus={tab.id === 'VEHICLES' ? () => { handleBottomTabChange('VEHICLES'); setAddVehicleOpen(true); } : undefined}
             />
           ))}
         </div>
