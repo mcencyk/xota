@@ -49,13 +49,13 @@ const GearIcon = () => (
 // ─── Data ────────────────────────────────────────────────────────────────────
 const BASE_DATA_OPTIONS = [
   'FA01 — Full Area Update',
-  'SE03 — Selective ECU',
-  'KE05 — Key ECU Flash',
+  'SE03 — Selective DRC',
+  'KE05 — Key DRC Flash',
   'PU01 — Powertrain Update',
 ];
 
 const VARIABLE_OPTIONS = [
-  { code: '01', name: 'ECU Firmware Baseline Config',    status: 'Active',     used: false },
+  { code: '01', name: 'DRC Firmware Baseline Config',    status: 'Active',     used: false },
   { code: '02', name: 'Brake Module Calibration Set',    status: 'Active',     used: true  },
   { code: '03', name: 'Gateway Protocol Parameters',     status: 'Active',     used: true  },
   { code: '04', name: 'Powertrain Calibration Baseline', status: 'Active',     used: false },
@@ -145,8 +145,8 @@ const FILTER_TYPES = ['VIN', 'PKN', 'Country', 'Model', 'Region', 'Production Ye
 const FILTER_OPERATORS = ['Contains', 'Equals', 'Starts with', 'Ends with', 'In range'];
 
 const CAMPAIGN_PARAMS_PRIMARY = [
-  { key: 'flashDurHV',      label: 'Flash Duration HV',           defaultVal: '102',      unit: 'sec.',  type: 'number', tooltip: 'Max time allowed for high-voltage ECU firmware flashing' },
-  { key: 'flashDurLV',      label: 'Flash Duration LV',           defaultVal: '102',      unit: 'sec.',  type: 'number', tooltip: 'Max time allowed for low-voltage ECU firmware flashing' },
+  { key: 'flashDurHV',      label: 'Flash Duration HV',           defaultVal: '102',      unit: 'sec.',  type: 'number', tooltip: 'Max time allowed for high-voltage DRC firmware flashing' },
+  { key: 'flashDurLV',      label: 'Flash Duration LV',           defaultVal: '102',      unit: 'sec.',  type: 'number', tooltip: 'Max time allowed for low-voltage DRC firmware flashing' },
   { key: 'flashDurHMI',     label: 'Flash Duration HMI',          defaultVal: '4',        unit: 'min.',  type: 'number', tooltip: 'Max time allowed for HMI display firmware flashing' },
   { key: 'enabledPowerGrid',label: 'Enabled Power Grid',          defaultVal: '2',        unit: '',      type: 'number', tooltip: 'Number of active power domains required during flashing' },
   { key: 'currentHV',       label: 'Current Consumption HV',      defaultVal: '10',       unit: 'amp.', type: 'number', tooltip: 'Max current draw from the high-voltage system during update' },
@@ -161,7 +161,7 @@ const CAMPAIGN_PARAMS_PRIMARY = [
   { key: 'tDelayStart2',    label: 'Time Delay Start 2',          defaultVal: '120',      unit: 'sec.', type: 'number', tooltip: 'Secondary delay applied before critical update operations' },
   { key: 'tDelayWaitSleep', label: 'Time Delay Wait For Sleep',   defaultVal: '30',       unit: 'sec.', type: 'number', tooltip: 'Wait time before verifying vehicle is in sleep mode' },
   { key: 'logLevel',        label: 'Log Level',                   defaultVal: '7',        unit: '',      type: 'number', tooltip: 'Diagnostic log verbosity — higher value means more detail' },
-  { key: 'installFailAction',label: 'Installation Failure Action',defaultVal: 'Continue', unit: '',      type: 'number', tooltip: 'Behavior when an ECU installation fails mid-campaign' },
+  { key: 'installFailAction',label: 'Installation Failure Action',defaultVal: 'Continue', unit: '',      type: 'number', tooltip: 'Behavior when an DRC installation fails mid-campaign' },
 ];
 const CAMPAIGN_PARAMS_SECONDARY = [
   { key: 'fallbackTimeout', label: 'Fallback Timeout',       defaultVal: '60',   unit: 'sec.', type: 'number', tooltip: 'Time before reverting to previous software version on failure' },

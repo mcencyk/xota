@@ -3,6 +3,7 @@ import Sidebar from './Sidebar';
 import CampaignDetailView from './CampaignDetailView';
 import TestUpdatesView from './TestUpdatesView';
 import NewCampaignWizard from './NewCampaignWizard';
+import TutorialOverlay from './TutorialOverlay';
 
 // ─── Status badge config ────────────────────────────────────────────────────
 const STATUS = {
@@ -16,7 +17,7 @@ const STATUS = {
 
 // ─── Mock data ───────────────────────────────────────────────────────────────
 const CAMPAIGNS = [
-  { id: 1,  name: 'Middle Europe Critical Bug Fix',    vehicles: '2 382',  code: 'FA01', crit: '01', spec: 'ID_ECU.4.1.2_ME_V3_0-1_R2_2023-11-14_0832.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 1,  name: 'Middle Europe Critical Bug Fix',    vehicles: '2 382',  code: 'FA01', crit: '01', spec: 'ID_DRC.4.1.2_ME_V3_0-1_R2_2023-11-14_0832.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
   { id: 2,  name: 'East Europe Brake Calibration',     vehicles: '312',    code: 'SE03', crit: '03', spec: 'ID_BRK.2.0.1_EE_K4_V1_0-3_2024-01-08_1340.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
   { id: 3,  name: 'Middle East Fleet Diagnostic',      vehicles: '645',    code: 'FA01', crit: '01', spec: 'ID_DGN.5.3.0_ME_V2_1-0_R1_2022-07-19_0915.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CREATED'] },
   { id: 4,  name: 'North America Software Update',     vehicles: '462',    code: 'FA01', crit: '01', spec: 'ID_SW.6.0.4_NA_K2_V5_2-1_2023-03-27_1628.xlsx',  measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['RUNNING'] },
@@ -24,7 +25,7 @@ const CAMPAIGNS = [
   { id: 6,  name: 'West Europe Performance Fix',       vehicles: '6 387',  code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_04.10.23',   type: 'Full',  date: '21.04.2024', statuses: ['COMPLETED'] },
   { id: 7,  name: 'Central Europe Critical Hotfix',    vehicles: '52',     code: 'SE03', crit: '05', spec: 'ID_HF.3.2.1_CE_K1_V2_1-4_2023-08-30_1105.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['RUNNING'] },
   { id: 8,  name: 'Turkey Region Software Patch',      vehicles: '7 536',  code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
-  { id: 9,  name: 'Pacific Region ECU Calibration',    vehicles: '84 563', code: 'FA01', crit: '01', spec: 'ID_ECU.7.0.2_PR_V6_3-0_R1_2023-06-05_1552.xlsx', measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['RUNNING'] },
+  { id: 9,  name: 'Pacific Region DRC Calibration',    vehicles: '84 563', code: 'FA01', crit: '01', spec: 'ID_DRC.7.0.2_PR_V6_3-0_R1_2023-06-05_1552.xlsx', measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['RUNNING'] },
   { id: 10, name: 'Baltic Region Brake Calibration',   vehicles: '5 756',  code: 'SE03', crit: '03', spec: 'ID_BRK.4.1.0_BR_K3_V1_0-5_2022-12-01_0820.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['COMPLETED'] },
   { id: 11, name: 'Iberia Powertrain Optimization',    vehicles: '82',     code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
   { id: 12, name: 'Alpine Region Software Patch',      vehicles: '74',     code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
@@ -34,12 +35,12 @@ const CAMPAIGNS = [
   { id: 16, name: 'Mexico Distribution Firmware',      vehicles: '634',    code: 'FA01', crit: '01', spec: 'ID_FW.1.4.6_MX_K1_V2_0-4_2023-04-14_0756.xlsx',  measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['COMPLETED'] },
   { id: 17, name: 'Southeast Asia Software Full',      vehicles: '754',    code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '12.07.2024', statuses: ['RUNNING'] },
   { id: 18, name: 'Scandinavia Performance Full',      vehicles: '8 464',  code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_04.10.23',   type: 'Full',  date: '12.07.2024', statuses: ['FAILED'] },
-  { id: 19, name: 'Australia Pacific ECU Update',      vehicles: '1 633',  code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '21.04.2024', statuses: ['RUNNING'] },
+  { id: 19, name: 'Australia Pacific DRC Update',      vehicles: '1 633',  code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_10.06.24',  type: 'Full',  date: '21.04.2024', statuses: ['RUNNING'] },
   { id: 20, name: 'Eastern Europe Drivetrain Fix',     vehicles: '8 674',  code: 'SE03', crit: '03', spec: 'ID_DRV.3.3.2_EE_V5_1-0_R4_2024-01-22_1618.xlsx', measure: '',                type: 'Partial', date: '21.04.2024', statuses: ['CREATED'] },
   { id: 21, name: 'France Region Software Patch',      vehicles: '85',     code: 'FA01', crit: '01', spec: 'ID_SW.2.9.1_FR_K3_V1_0-2_2023-07-07_0848.xlsx',  measure: '',                type: 'Partial', date: '12.07.2024', statuses: ['COMPLETED'] },
-  { id: 22, name: 'US East Coast ECU Calibration',     vehicles: '63',     code: 'FA01', crit: '01', spec: 'ID_ECU.6.1.4_US_V2_0-3_R2_2022-11-30_1024.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
+  { id: 22, name: 'US East Coast DRC Calibration',     vehicles: '63',     code: 'FA01', crit: '01', spec: 'ID_DRC.6.1.4_US_V2_0-3_R2_2022-11-30_1024.xlsx', measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
   { id: 23, name: 'Brazil South Fleet Firmware',       vehicles: '264',    code: 'FA01', crit: '01', spec: 'ID_FW.4.0.7_BR_K4_V3_1-1_2023-02-16_1349.xlsx',  measure: '',                type: 'Partial', date: '07.08.2024', statuses: ['CALCULATED'] },
-  { id: 24, name: 'Japan Region ECU Full Update',      vehicles: '12 345', code: 'FA01', crit: '02', spec: 'ID_ECU.9.1.0_JP_V5_2-1_R3_2024-04-18_1004.xlsx', measure: '',                type: 'Partial', date: '18.04.2024', statuses: ['RUNNING'] },
+  { id: 24, name: 'Japan Region DRC Full Update',      vehicles: '12 345', code: 'FA01', crit: '02', spec: 'ID_DRC.9.1.0_JP_V5_2-1_R3_2024-04-18_1004.xlsx', measure: '',                type: 'Partial', date: '18.04.2024', statuses: ['RUNNING'] },
   { id: 25, name: 'Italy Network Firmware Patch',      vehicles: '891',    code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_15.03.24',   type: 'Full',  date: '15.03.2024', statuses: ['COMPLETED'] },
   { id: 26, name: 'Poland Regional Drive Fix',         vehicles: '3 241',  code: 'SE03', crit: '03', spec: 'ID_DRV.1.2.4_PL_K2_V3_0-1_2023-11-09_0732.xlsx', measure: '',                type: 'Partial', date: '09.11.2023', statuses: ['FAILED'] },
   { id: 27, name: 'UK Fleet Powertrain Update',        vehicles: '47 821', code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_22.01.24',  type: 'Full',  date: '22.01.2024', statuses: ['RUNNING'] },
@@ -47,14 +48,14 @@ const CAMPAIGNS = [
   { id: 29, name: 'Argentina Fleet Diagnostic',        vehicles: '523',    code: 'FA01', crit: '01', spec: 'ID_DGN.3.1.7_AR_K1_V2_0-2_2024-06-12_0855.xlsx', measure: '',                type: 'Partial', date: '12.06.2024', statuses: ['DRAFT'] },
   { id: 30, name: 'China North Gateway Patch',         vehicles: '18 492', code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_08.09.23',   type: 'Full',  date: '08.09.2023', statuses: ['RUNNING'] },
   { id: 31, name: 'Netherlands Critical Hotfix',       vehicles: '178',    code: 'FA01', crit: '01', spec: 'ID_HF.2.4.3_NL_K3_V1_0-1_2024-02-27_1233.xlsx', measure: '',                type: 'Partial', date: '27.02.2024', statuses: ['CREATED'] },
-  { id: 32, name: 'India South ECU Calibration',       vehicles: '9 304',  code: 'FA01', crit: '02', spec: 'ID_ECU.5.2.8_IN_V3_1-4_R1_2023-08-14_0647.xlsx', measure: '',                type: 'Partial', date: '14.08.2023', statuses: ['COMPLETED'] },
+  { id: 32, name: 'India South DRC Calibration',       vehicles: '9 304',  code: 'FA01', crit: '02', spec: 'ID_DRC.5.2.8_IN_V3_1-4_R1_2023-08-14_0647.xlsx', measure: '',                type: 'Partial', date: '14.08.2023', statuses: ['COMPLETED'] },
   { id: 33, name: 'Spain East Software Update',        vehicles: '654',    code: 'PU01', crit: '01', spec: '',                                                measure: 'ID_FINAL_17.05.24',  type: 'Full',  date: '17.05.2024', statuses: ['RUNNING'] },
   { id: 34, name: 'Russia West Fleet Firmware',        vehicles: '4 112',  code: 'SE03', crit: '03', spec: 'ID_FW.7.3.1_RU_K4_V5_2-0_2023-12-20_1118.xlsx', measure: '',                type: 'Partial', date: '20.12.2023', statuses: ['CALCULATED'] },
   { id: 35, name: 'Vietnam Fleet Drivetrain Fix',      vehicles: '267',    code: 'FA01', crit: '01', spec: 'ID_DRV.4.0.5_VN_K1_V2_1-3_2023-06-28_0930.xlsx', measure: '',                type: 'Partial', date: '28.06.2023', statuses: ['FAILED'] },
   { id: 36, name: 'Egypt Region Software Hotfix',      vehicles: '1 893',  code: 'KE05', crit: '05', spec: '',                                                measure: 'ID_DEMO_30.11.23',   type: 'Full',  date: '30.11.2023', statuses: ['RUNNING'] },
   { id: 37, name: 'Thailand Gateway Calibration',      vehicles: '732',    code: 'FA01', crit: '01', spec: 'ID_GW.3.5.0_TH_V2_0-1_R1_2024-03-09_1445.xlsx', measure: '',                type: 'Partial', date: '09.03.2024', statuses: ['COMPLETED'] },
   { id: 38, name: 'South Africa Brake System',         vehicles: '4 562',  code: 'SE03', crit: '03', spec: 'ID_BRK.5.1.3_ZA_K2_V4_1-0_2024-07-01_0812.xlsx', measure: '',                type: 'Partial', date: '01.07.2024', statuses: ['DRAFT'] },
-  { id: 39, name: 'Czech Fleet ECU Diagnostic',        vehicles: '836',    code: 'FA01', crit: '02', spec: 'ID_DGN.6.2.1_CZ_K3_V1_0-3_2023-10-15_1556.xlsx', measure: '',                type: 'Partial', date: '15.10.2023', statuses: ['CREATED'] },
+  { id: 39, name: 'Czech Fleet DRC Diagnostic',        vehicles: '836',    code: 'FA01', crit: '02', spec: 'ID_DGN.6.2.1_CZ_K3_V1_0-3_2023-10-15_1556.xlsx', measure: '',                type: 'Partial', date: '15.10.2023', statuses: ['CREATED'] },
 ];
 
 const TAB_TOTAL = { all: 39, active: 23, inactive: 16, mine: 8, attention: 11 };
@@ -83,8 +84,8 @@ const TABS_BOTTOM = [
 ];
 
 const VARIABLES_DATA = [
-  { code: '01', name: 'ECU Firmware Baseline Config',    created: '10.01.2024', modified: '15.03.2024', source: 'ECU_BASE_CFG_v1.xlsx',  author: 'Jonathan Blackwell',    type: 'Manual', campaigns: 4, status: 'Active',
-    files: [{ name: 'ECU_BASE_CFG_v1.xlsx', date: '15.03.2024', type: 'Manual' }, { name: 'ECU_BASE_CFG_v0.9.xlsx', date: '20.02.2024', type: 'Manual' }, { name: 'ECU_BASE_CFG_v0.8.xlsx', date: '10.01.2024', type: 'Manual' }] },
+  { code: '01', name: 'DRC Firmware Baseline Config',    created: '10.01.2024', modified: '15.03.2024', source: 'DRC_BASE_CFG_v1.xlsx',  author: 'Jonathan Blackwell',    type: 'Manual', campaigns: 4, status: 'Active',
+    files: [{ name: 'DRC_BASE_CFG_v1.xlsx', date: '15.03.2024', type: 'Manual' }, { name: 'DRC_BASE_CFG_v0.9.xlsx', date: '20.02.2024', type: 'Manual' }, { name: 'DRC_BASE_CFG_v0.8.xlsx', date: '10.01.2024', type: 'Manual' }] },
   { code: '02', name: 'Brake Module Calibration Set',    created: '22.01.2024', modified: '22.01.2024', source: 'BRK_CAL_v2.xlsx',       author: 'Natalia Ferreira',      type: 'Import', campaigns: 2, status: 'Active',
     files: [{ name: 'BRK_CAL_v2.xlsx', date: '22.01.2024', type: 'Import' }, { name: 'BRK_CAL_v1.xlsx', date: '05.11.2023', type: 'Import' }] },
   { code: '03', name: 'Gateway Protocol Parameters',     created: '01.02.2024', modified: '01.03.2024', source: 'GW_PARAMS_2024.csv',    author: 'Hiroshi Tanaka',        type: 'Import', campaigns: 3, status: 'Active',
@@ -1183,7 +1184,7 @@ function NewVariableModal({ onClose }) {
 }
 
 // ─── Main component ──────────────────────────────────────────────────────────
-export default function DashboardView({ activeBrand, onBrandChange, onLogout }) {
+export default function DashboardView({ activeBrand, onBrandChange, onLogout, showTutorial, onTutorialDone, onShowGuide }) {
   const [selectedVariable, setSelectedVariable] = useState(null);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [loadingCampaign, setLoadingCampaign] = useState(null);
@@ -1461,6 +1462,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
           if (isTest) { handleSidebarNavChange('people'); }
           else { const c = CAMPAIGNS.find(x => x.id === campaignId); if (c) handleCampaignOpen(c); }
         }}
+        onShowGuide={onShowGuide}
       />
 
       {/* ── Main area ── */}
@@ -1480,7 +1482,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
           <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.15)' }} />
 
           {/* Top tabs */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div data-tutorial="top-tabs" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             {activeBottomTab === 'CRITERIONS' ? (
               <>
                 <TopTab tab={{ id: 'all',    label: 'ALL',    count: varCounts.all    }} active={varTypeTab === 'all'}    onClick={() => setVarTypeTab('all')}    />
@@ -1552,6 +1554,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
 
           {/* Search */}
           <div
+            data-tutorial="search"
             onMouseEnter={() => setSearchHovered(true)}
             onMouseLeave={() => setSearchHovered(false)}
             style={{
@@ -1721,7 +1724,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
         })()}
 
         {/* ── Bottom tab bar (floating) ── */}
-        <div style={{
+        <div data-tutorial="bottom-tabs" style={{
           position: 'absolute', bottom: 12, left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex', alignItems: 'center', gap: 8,
@@ -1748,6 +1751,7 @@ export default function DashboardView({ activeBrand, onBrandChange, onLogout }) 
     </div>
     {addVariableOpen && <NewVariableModal onClose={() => setAddVariableOpen(false)} />}
     {newCampaignOpen && <NewCampaignWizard onClose={() => setNewCampaignOpen(false)} onSuccess={() => { setNewCampaignOpen(false); setCampaignCreatedToast(true); }} />}
+    {showTutorial && <TutorialOverlay onDone={onTutorialDone} />}
     {campaignCreatedToast && (
       <div style={{ position: 'fixed', top: 20, right: 20, zIndex: 999, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 12, background: 'rgba(0,28,18,0.88)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(40,160,70,0.45)', boxShadow: '0 4px 16px rgba(0,0,0,0.32), 0 0 0 1px rgba(40,160,70,0.12)', animation: campaignToastHiding ? 'toastSlideOut 0.32s ease forwards' : 'toastSlideIn 0.28s ease forwards', maxWidth: 300, pointerEvents: 'none' }}>
         <div style={{ width: 22, height: 22, borderRadius: '50%', flexShrink: 0, background: 'rgba(40,160,70,0.25)', border: '1px solid rgba(40,200,100,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

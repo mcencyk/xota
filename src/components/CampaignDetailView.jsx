@@ -1213,8 +1213,8 @@ function IconBtn({ children, tooltip, danger, approve, onClick }) {
 // ─── Configure overlay ────────────────────────────────────────────────────────
 const CONFIGURE_PARAMS = {
   PRIMARY: [
-    { label: 'Flash Duration HV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for high-voltage ECU firmware flashing' },
-    { label: 'Flash Duration LV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for low-voltage ECU firmware flashing' },
+    { label: 'Flash Duration HV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for high-voltage DRC firmware flashing' },
+    { label: 'Flash Duration LV',           value: '102', unit: 'sec.', tooltip: 'Max time allowed for low-voltage DRC firmware flashing' },
     { label: 'Flash Duration HMI',          value: '4',   unit: 'min.', tooltip: 'Max time allowed for HMI display firmware flashing' },
     { label: 'Enabled Power Grid',          value: '2',   unit: '',     tooltip: 'Number of active power domains required during flashing' },
     { label: 'Current Consumption HV',      value: '10',  unit: 'amp.', tooltip: 'Max current draw from the high-voltage system during update' },
@@ -1229,7 +1229,7 @@ const CONFIGURE_PARAMS = {
     { label: 'Time Delay Start 2',          value: '120', unit: 'sec.', tooltip: 'Secondary delay applied before critical update operations' },
     { label: 'Time Delay Wait For Sleep',   value: '30',  unit: 'sec.', tooltip: 'Wait time before verifying vehicle is in sleep mode' },
     { label: 'Log Level',                   value: '7',   unit: '',     tooltip: 'Diagnostic log verbosity — higher value means more detail' },
-    { label: 'Installation Failure Action', value: 'Continue', unit: '', tooltip: 'Behavior when an ECU installation fails mid-campaign' },
+    { label: 'Installation Failure Action', value: 'Continue', unit: '', tooltip: 'Behavior when an DRC installation fails mid-campaign' },
   ],
   SECONDARY: [
     { label: 'Fallback Timeout',            value: '60',  unit: 'sec.', tooltip: 'Time before reverting to previous software version on failure' },
@@ -1681,8 +1681,8 @@ function getCampaignStats(campaign) {
   const failTrend    = failureRate > 12  ? 'up' : 'down';
 
   const CREATORS = ['MIKE DEAN', 'ANNA KOWALSKI', 'JOHN SMITH', 'LAURA MÜLLER', 'PETER NOVAK', 'SARA JENSEN'];
-  const SPECS    = ['ABS SPRING UPDATE 4', 'ECU PATCH V2.1', 'BRAKE CAL. REV3', 'GATEWAY FW 1.8', 'DRIVE SYS. K7', 'POWERTRAIN B2'];
-  const BASE_IDS = ['CD01_01_TEST INPUT', 'BD02_FLEET_MAIN', 'BD04_ECU_BASE', 'CD07_REGION_A', 'BD11_FULL_DIAG', 'CD03_PARTIAL_R'];
+  const SPECS    = ['ABS SPRING UPDATE 4', 'DRC PATCH V2.1', 'BRAKE CAL. REV3', 'GATEWAY FW 1.8', 'DRIVE SYS. K7', 'POWERTRAIN B2'];
+  const BASE_IDS = ['CD01_01_TEST INPUT', 'BD02_FLEET_MAIN', 'BD04_DRC_BASE', 'CD07_REGION_A', 'BD11_FULL_DIAG', 'CD03_PARTIAL_R'];
 
   const creator  = CREATORS[s % CREATORS.length];
   const spec     = SPECS[s % SPECS.length];

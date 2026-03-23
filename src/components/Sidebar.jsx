@@ -53,15 +53,24 @@ const SlidersIcon = () => (
   </svg>
 );
 
+const QuestionIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
 const Divider = () => (
   <div style={{ width: '100%', height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0' }} />
 );
 
-function NavIcon({ icon, active, badge, label, onClick }) {
+function NavIcon({ icon, active, badge, label, onClick, dataTutorial }) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      data-tutorial={dataTutorial}
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -1426,9 +1435,9 @@ const TOAST_CFG = {
 const Q_POOL = [
   { toastType:'info',    notifType:'campaign_status',     status:'RUNNING',   title:'Statistics Refreshed',      desc:'Campaign statistics updated for all active regions.',                          campaignId:1,   campaignName:'Middle Europe Critical Bug Fix', isTest:false },
   { toastType:'warning', notifType:'campaign_status',     status:'RUNNING',   title:'Slow Progress Detected',    desc:'Turkey Region Software Patch is progressing slower than expected.',            campaignId:8,   campaignName:'Turkey Region Software Patch',   isTest:false },
-  { toastType:'success', notifType:'campaign_status',     status:'COMPLETED', title:'Campaign Completed',        desc:'Norway ECU Update completed — 1 204 vehicles updated successfully.',            campaignId:27,  campaignName:'UK Fleet Powertrain Update',      isTest:false },
+  { toastType:'success', notifType:'campaign_status',     status:'COMPLETED', title:'Campaign Completed',        desc:'Norway DRC Update completed — 1 204 vehicles updated successfully.',            campaignId:27,  campaignName:'UK Fleet Powertrain Update',      isTest:false },
   { toastType:'error',   notifType:'campaign_status',     status:'FAILED',    title:'Campaign Failed',           desc:'Alpine Region Software Patch failed due to connection timeout.',                campaignId:12,  campaignName:'Alpine Region Software Patch',    isTest:false },
-  { toastType:'info',    notifType:'campaign_test_status',status:'RUNNING',   title:'Test Enrollment Updated',   desc:'Suspension ECU Hotfix Test has enrolled 3 additional vehicles.',               campaignId:112, campaignName:'Suspension ECU Hotfix Test',      isTest:true  },
+  { toastType:'info',    notifType:'campaign_test_status',status:'RUNNING',   title:'Test Enrollment Updated',   desc:'Suspension DRC Hotfix Test has enrolled 3 additional vehicles.',               campaignId:112, campaignName:'Suspension DRC Hotfix Test',      isTest:true  },
   { toastType:'warning', notifType:'campaign_approve',    status:'CREATED',   title:'Approval Deadline Nearing', desc:'Netherlands Critical Hotfix has not been approved in over 48 hours.',          campaignId:31,  campaignName:'Netherlands Critical Hotfix',     isTest:false },
   { toastType:'success', notifType:'scheduled_update',                        title:'Data Import Completed',     desc:'Scheduled import finished — Seat Q2 2024 data loaded successfully.',            detail:{ brand:'Seat', batch:'Q2 2024', vehicles:'1 847', regions:['Spain','Portugal'], fileRef:'seat_q2_2024.xlsx', ts:'2026-03-12 14:22' } },
   { toastType:'info',    notifType:'system',                                  title:'System Health Check',       desc:'All services operational. Last check: 2026-03-12 15:00 UTC.' },
@@ -1502,7 +1511,7 @@ const NOTIF_RAW = [
   { id:13, type:'campaign_test_status',  status:'RUNNING',                  title:'Lab Campaign Started',    desc:'HVAC Control Unit Test is now running — 91 test vehicles enrolled.',                                 time:'Yesterday',   campaignId:109, campaignName:'HVAC Control Unit Test',           isTest:true  },
   { id:14, type:'campaign_status',       status:'FAILED',                   title:'Campaign Failed',          desc:'Poland Regional Drive Fix failed — rollback initiated on 3 241 vehicles.',                           time:'Yesterday',   campaignId:26,  campaignName:'Poland Regional Drive Fix',         isTest:false },
   { id:15, type:'scheduled_update',                                         title:'Fleet Database Refreshed', desc:'Audi fleet database refreshed — 6 741 records updated with latest telemetry.',                       time:'Yesterday',   detail:{ brand:'Audi',   batch:'Feb 2024',        vehicles:'6 741', regions:['Germany','Austria','Switzerland'],                                 fileRef:'audi_feb2024.xlsx',        ts:'2026-03-11 14:48' } },
-  { id:16, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'Japan Region ECU Full Update — 12 345 vehicles successfully updated.',                               time:'2 days ago',  campaignId:24,  campaignName:'Japan Region ECU Full Update',      isTest:false },
+  { id:16, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'Japan Region DRC Full Update — 12 345 vehicles successfully updated.',                               time:'2 days ago',  campaignId:24,  campaignName:'Japan Region DRC Full Update',      isTest:false },
   { id:17, type:'system',                                                   title:'Maintenance Scheduled',    desc:'System maintenance on 2026-03-14 02:00–04:00 UTC. No service interruption expected.',                 time:'2 days ago'  },
   { id:18, type:'campaign_test_status',  status:'COMPLETED',                title:'Lab Campaign Completed',  desc:'Display Module Canary Test finished — 64/64 vehicles passed QA checks.',                              time:'2 days ago',  campaignId:108, campaignName:'Display Module Canary Test',       isTest:true  },
   { id:19, type:'campaign_approve',      status:'CREATED',                  title:'Approval Required',        desc:'Netherlands Critical Hotfix (CREATED) has been submitted for your sign-off.',                        time:'2 days ago',  campaignId:31,  campaignName:'Netherlands Critical Hotfix',       isTest:false },
@@ -1515,7 +1524,7 @@ const NOTIF_RAW = [
   { id:26, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Running',         desc:'UK Fleet Powertrain Update actively distributing to 47 821 vehicles.',                               time:'4 days ago',  campaignId:27,  campaignName:'UK Fleet Powertrain Update',         isTest:false },
   { id:27, type:'campaign_test_status',  status:'RUNNING',                  title:'Lab Campaign Started',    desc:'Drive Unit OTA Smoke Test started — 75 vehicles enrolled for validation.',                           time:'4 days ago',  campaignId:106, campaignName:'Drive Unit OTA Smoke Test',         isTest:true  },
   { id:28, type:'campaign_approve',      status:'CREATED',                  title:'Approval Required',        desc:'Eastern Europe Drivetrain Fix (CREATED) is ready for your approval.',                                time:'4 days ago',  campaignId:20,  campaignName:'Eastern Europe Drivetrain Fix',     isTest:false },
-  { id:29, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'India South ECU Calibration completed — 9 304 vehicles updated.',                                   time:'4 days ago',  campaignId:32,  campaignName:'India South ECU Calibration',       isTest:false },
+  { id:29, type:'campaign_status',       status:'COMPLETED',                title:'Campaign Completed',       desc:'India South DRC Calibration completed — 9 304 vehicles updated.',                                   time:'4 days ago',  campaignId:32,  campaignName:'India South DRC Calibration',       isTest:false },
   { id:30, type:'scheduled_update',                                         title:'Batch Import Completed',   desc:'VW batch January 2024 — 9 412 vehicles, 14 regions synchronized.',                                  time:'5 days ago',  detail:{ brand:'VW',     batch:'January 2024',    vehicles:'9 412', regions:['Germany','Austria','Poland','Czech Republic','+10 regions'],       fileRef:'vw_fleet_jan2024.xlsx',    ts:'2026-03-07 08:00' } },
   { id:31, type:'campaign_test_status',  status:'COMPLETED',                title:'Lab Campaign Completed',  desc:'ABS System Integration Test — 33 vehicles passed full validation.',                                   time:'5 days ago',  campaignId:105, campaignName:'ABS System Integration Test',       isTest:true  },
   { id:32, type:'campaign_status',       status:'RUNNING',                  title:'Campaign Started',         desc:'Southeast Asia Software Full began deployment on 754 vehicles.',                                     time:'5 days ago',  campaignId:17,  campaignName:'Southeast Asia Software Full',      isTest:false },
@@ -1786,7 +1795,7 @@ function NotificationsOverlay({ notifications, onClose, onMarkAllRead, onMarkRea
 }
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
-export default function Sidebar({ activeNav, onNavChange, attentionCount, testAttentionCount, activeBrand, onBrandChange, onLogout, onOpenCampaign }) {
+export default function Sidebar({ activeNav, onNavChange, attentionCount, testAttentionCount, activeBrand, onBrandChange, onLogout, onOpenCampaign, onShowGuide }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [systemSettingsOpen, setSystemSettingsOpen] = useState(false);
   const [reportsOpen, setReportsOpen] = useState(false);
@@ -1828,7 +1837,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
   return (
     <>
-      <div style={{
+      <div data-tutorial="sidebar" style={{
         width: 80,
         display: 'flex',
         flexDirection: 'column',
@@ -1840,7 +1849,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
         overflow: 'visible',
       }}>
         {/* Logo + ITERU PRO */}
-        <div style={{
+        <div data-tutorial="brand-logo" style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: 8, paddingTop: 24, paddingBottom: 12,
         }}>
@@ -1872,8 +1881,8 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
         <Divider />
 
-        <NavIcon icon={<GridIcon />} active={activeNav === 'field'} badge={attentionCount} label="Field" onClick={() => onNavChange('field')} />
-        <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} badge={testAttentionCount} label="Lab" onClick={() => onNavChange('people')} />
+        <NavIcon icon={<GridIcon />} active={activeNav === 'field'} badge={attentionCount} label="Field" onClick={() => onNavChange('field')} dataTutorial="nav-field" />
+        <NavIcon icon={<AtomIcon />} active={activeNav === 'people'} badge={testAttentionCount} label="Lab" onClick={() => onNavChange('people')} dataTutorial="nav-lab" />
         <NavIcon icon={<ClipboardIcon />} active={reportsOpen} label="Reports" onClick={() => setReportsOpen(o => !o)} />
 
         <Divider />
@@ -1886,6 +1895,7 @@ export default function Sidebar({ activeNav, onNavChange, attentionCount, testAt
 
         <Divider />
 
+        <NavIcon icon={<QuestionIcon />} label="Guide" onClick={() => onShowGuide?.()} />
         <NavIcon icon={<SlidersIcon />} active={systemSettingsOpen} label="System Settings" onClick={() => setSystemSettingsOpen(o => !o)} />
 
         {/* Avatar */}

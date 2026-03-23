@@ -112,7 +112,7 @@ function getVehicleStats(vehicle) {
     connectivity:      ri(88, 100),
     monthly,
     components: [
-      { name: 'ECU Main',      version: vehicle.sw },
+      { name: 'DRC Main',      version: vehicle.sw },
       { name: 'BMS',           version: `v${ri(1,3)}.${ri(0,9)}.${ri(0,9)}` },
       { name: 'Gateway',       version: `v${ri(1,4)}.${ri(0,5)}` },
       { name: 'HVAC Control',  version: `v${ri(2,5)}.${ri(0,9)}.${ri(0,4)}` },

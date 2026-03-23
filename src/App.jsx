@@ -172,6 +172,7 @@ export default function App() {
   const [loginError, setLoginError] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [toastKey, setToastKey] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   function handleBrandChange(newBrand) {
     setDashVisible(false);
@@ -226,7 +227,10 @@ export default function App() {
       setTimeout(() => {
         setLoading(false);
         setLoggedIn(true);
-        requestAnimationFrame(() => requestAnimationFrame(() => setDashVisible(true)));
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          setDashVisible(true);
+          setShowTutorial(true);
+        }));
       }, 3200);
     }, 380);
   }
@@ -257,7 +261,7 @@ export default function App() {
     }
     return (
       <div style={{ opacity: dashVisible ? 1 : 0, transition: 'opacity 0.4s ease', width: '100%', height: '100%' }}>
-        <DashboardView activeBrand={activeBrand} onBrandChange={handleBrandChange} onLogout={handleLogout} />
+        <DashboardView activeBrand={activeBrand} onBrandChange={handleBrandChange} onLogout={handleLogout} showTutorial={showTutorial} onTutorialDone={() => setShowTutorial(false)} onShowGuide={() => setShowTutorial(true)} />
       </div>
     );
   }

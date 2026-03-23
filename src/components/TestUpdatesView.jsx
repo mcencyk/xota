@@ -13,7 +13,7 @@ const STATUS = {
 
 // ─── Test campaigns (18, max 100 vehicles, no CREATED/CALCULATED) ─────────────
 const TEST_CAMPAIGNS = [
-  { id: 101, name: 'ECU Firmware v3.2 Validation',    vehicles: '87',  code: 'TC01', spec: 'ID_ECU.3.2_VAL_V1_2024-01-15_0900.xlsx',   measure: '',                  type: 'Partial', date: '15.01.2024', statuses: ['RUNNING']   },
+  { id: 101, name: 'DRC Firmware v3.2 Validation',    vehicles: '87',  code: 'TC01', spec: 'ID_DRC.3.2_VAL_V1_2024-01-15_0900.xlsx',   measure: '',                  type: 'Partial', date: '15.01.2024', statuses: ['RUNNING']   },
   { id: 102, name: 'Brake Module Alpha Test',          vehicles: '42',  code: 'TC02', spec: '',                                          measure: 'ID_TEST_BRK_ALPHA', type: 'Full',    date: '22.02.2024', statuses: ['COMPLETED'] },
   { id: 103, name: 'Gateway Protocol Stress Test',     vehicles: '99',  code: 'TC01', spec: 'ID_GW.1.0_STRESS_2024-03-01_1100.xlsx',     measure: '',                  type: 'Partial', date: '01.03.2024', statuses: ['FAILED']    },
   { id: 104, name: 'Powertrain Calibration Beta',      vehicles: '56',  code: 'TC03', spec: '',                                          measure: 'ID_TEST_PWR_B2',    type: 'Full',    date: '12.03.2024', statuses: ['RUNNING']   },
@@ -24,7 +24,7 @@ const TEST_CAMPAIGNS = [
   { id: 109, name: 'HVAC Control Unit Test',           vehicles: '91',  code: 'TC01', spec: 'ID_HVAC.3.0_TEST_2024-05-14_1600.xlsx',     measure: '',                  type: 'Partial', date: '14.05.2024', statuses: ['RUNNING']   },
   { id: 110, name: 'Battery Management Pilot',         vehicles: '12',  code: 'TC03', spec: '',                                          measure: 'ID_TEST_BMS_P1',    type: 'Full',    date: '28.05.2024', statuses: ['FAILED']    },
   { id: 111, name: 'Telematics Unit Validation',       vehicles: '47',  code: 'TC02', spec: 'ID_TEL.2.2_VAL_2024-06-09_0930.xlsx',       measure: '',                  type: 'Partial', date: '09.06.2024', statuses: ['COMPLETED'] },
-  { id: 112, name: 'Suspension ECU Hotfix Test',       vehicles: '83',  code: 'TC01', spec: 'ID_SUS.1.1_HF_2024-06-22_1145.xlsx',        measure: '',                  type: 'Partial', date: '22.06.2024', statuses: ['RUNNING']   },
+  { id: 112, name: 'Suspension DRC Hotfix Test',       vehicles: '83',  code: 'TC01', spec: 'ID_SUS.1.1_HF_2024-06-22_1145.xlsx',        measure: '',                  type: 'Partial', date: '22.06.2024', statuses: ['RUNNING']   },
   { id: 113, name: 'Climate Module Partial Test',      vehicles: '29',  code: 'TC03', spec: '',                                          measure: 'ID_TEST_CLI_PT',    type: 'Full',    date: '03.07.2024', statuses: ['COMPLETED'] },
   { id: 114, name: 'Infotainment System Alpha',        vehicles: '100', code: 'TC02', spec: 'ID_IFT.5.0_ALPHA_2024-07-15_0800.xlsx',     measure: '',                  type: 'Partial', date: '15.07.2024', statuses: ['FAILED']    },
   { id: 115, name: 'Door Lock Module Regression',      vehicles: '38',  code: 'TC01', spec: 'ID_DLK.0.9_REG_2024-07-29_1300.xlsx',       measure: '',                  type: 'Partial', date: '29.07.2024', statuses: ['RUNNING']   },
@@ -67,7 +67,7 @@ const BRAND_MODELS = {
   volvo: ['XC40 Recharge', 'XC60 T8', 'XC90 B6', 'C40 Recharge', 'S60 Recharge', 'EX30', 'EX90'],
 };
 const VEH_SW   = ['v2.4.1','v2.8.3','v3.0.0','v3.1.2','v3.2.4','v4.0.0','v4.1.1','v4.2.0'];
-const VEH_CHIP = ['ECU-MQB-4.1','ECU-MQB-4.2','BMS-v2.0','BMS-v2.1','GW-1.4','GW-2.0','HVAC-3.1','NAV-2.5'];
+const VEH_CHIP = ['DRC-MQB-4.1','DRC-MQB-4.2','BMS-v2.0','BMS-v2.1','GW-1.4','GW-2.0','HVAC-3.1','NAV-2.5'];
 
 function mkRng(seed) {
   let s = seed >>> 0;
