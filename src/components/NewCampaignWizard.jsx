@@ -754,6 +754,12 @@ function EmptyState({ label }) {
 }
 
 const TOTAL_POOL = 248342;
+const COUNTRIES_POOL = [
+  'Germany','Poland','France','Italy','Spain','Netherlands','Belgium','Sweden',
+  'Norway','Austria','Switzerland','UK','Czechia','Hungary','Romania','Portugal',
+  'Denmark','Finland','Slovakia','Croatia','USA','Canada','Japan','Australia',
+  'Greece','Turkey','Ukraine','Serbia','Bulgaria','Lithuania',
+];
 
 
 // ─── Info icon with portal tooltip ───────────────────────────────────────────
@@ -902,6 +908,21 @@ function Step2({ intervals, selIntervalId, setSelIntervalId, rules, setRules, cu
     intervals.forEach(i => { if (!i.fixed) v[i.id] = 0; });
     return v;
   });
+  const [intervalCountries, setIntervalCountries] = useState(() => {
+    // Distribute TOTAL_POOL across countries for ungrouped
+    const countries = [...COUNTRIES_POOL];
+    const rows = [];
+    let rem = TOTAL_POOL;
+    for (let i = 0; i < countries.length - 1; i++) {
+      const share = Math.round(rem * (0.04 + Math.random() * 0.12));
+      rows.push({ country: countries[i], count: share });
+      rem -= share;
+    }
+    rows.push({ country: countries[countries.length - 1], count: rem });
+    rows.sort((a, b) => b.count - a.count);
+    return { ungrouped: rows };
+  });
+  const [expandedIntervals, setExpandedIntervals] = useState(new Set());
   const [recalculating, setRecalculating] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [gearHov, setGearHov] = useState(false);
@@ -945,7 +966,28 @@ function Step2({ intervals, selIntervalId, setSelIntervalId, rules, setRules, cu
         if (actual > 0) { newV[i.id] = actual; remaining -= actual; }
       });
       newV.ungrouped = remaining;
+
+      // Build per-country breakdown for each interval
+      const newC = {};
+      const allCountries = [...COUNTRIES_POOL];
+      Object.entries(newV).forEach(([id, total]) => {
+        if (total === 0) { newC[id] = []; return; }
+        const count = id === 'ungrouped' ? allCountries.length : Math.min(3 + Math.floor(Math.random() * 6), allCountries.length);
+        const pool = id === 'ungrouped' ? [...allCountries] : [...allCountries].sort(() => Math.random() - 0.5).slice(0, count);
+        const rows = [];
+        let rem = total;
+        for (let k = 0; k < pool.length - 1; k++) {
+          const share = Math.round(rem * (id === 'ungrouped' ? (0.04 + Math.random() * 0.12) : (0.08 + Math.random() * 0.3)));
+          rows.push({ country: pool[k], count: Math.max(1, share) });
+          rem -= Math.max(1, share);
+        }
+        rows.push({ country: pool[pool.length - 1], count: Math.max(1, rem) });
+        rows.sort((a, b) => b.count - a.count);
+        newC[id] = rows;
+      });
+
       setIntervalVehicles(newV);
+      setIntervalCountries(newC);
       setRecalculating(false);
       onRecalculatingChange(false);
     }, 1100 + Math.random() * 700);
@@ -1107,18 +1149,46 @@ function Step2({ intervals, selIntervalId, setSelIntervalId, rules, setRules, cu
           )}
         </button>
         <div style={{ flex: 1, background: 'rgba(0,30,46,0.5)', border: '1px solid rgba(21,63,83,0.7)', borderRadius: 10, overflow: 'hidden', display: 'flex', flexDirection: 'column', opacity: recalculating ? 0.4 : 1, transition: 'opacity 0.2s' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(21,63,83,0.7)', background: 'rgba(1,38,58,0.6)', flexShrink: 0 }}>
-            {['INTERVAL', 'VEHICLES'].map(h => (
-              <div key={h} style={{ flex: 1, padding: '7px 10px', fontSize: 8, fontWeight: 700, color: 'rgba(128,176,200,0.5)', letterSpacing: 0.7, fontFamily: F }}>{h}</div>
-            ))}
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid rgba(21,63,83,0.7)', background: 'rgba(1,38,58,0.6)', flexShrink: 0, padding: '7px 10px' }}>
+            <div style={{ width: 18, flexShrink: 0 }} />
+            <div style={{ flex: 1, fontSize: 8, fontWeight: 700, color: 'rgba(128,176,200,0.5)', letterSpacing: 0.7, fontFamily: F }}>INTERVAL</div>
+            <div style={{ width: 72, flexShrink: 0, fontSize: 8, fontWeight: 700, color: 'rgba(128,176,200,0.5)', letterSpacing: 0.7, fontFamily: F, textAlign: 'right' }}>VEHICLES</div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {[...intervals].sort((a, b) => (b.isUngrouped ? 1 : 0) - (a.isUngrouped ? 1 : 0)).map((interval, i) => (
-              <div key={interval.id} style={{ display: 'flex', padding: '7px 10px', borderBottom: '1px solid rgba(21,63,83,0.3)', background: i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.12)' }}>
-                <div style={{ flex: 1, fontSize: 11, fontWeight: 500, fontFamily: F, color: 'rgba(204,223,233,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{interval.name}</div>
-                <div style={{ flex: 1, fontSize: 11, fontWeight: 600, fontFamily: F, color: '#ffffff' }}>{(intervalVehicles[interval.id] ?? 0).toLocaleString()}</div>
-              </div>
-            ))}
+            {[...intervals].sort((a, b) => (b.isUngrouped ? 1 : 0) - (a.isUngrouped ? 1 : 0)).map((interval, i) => {
+              const vCount = intervalVehicles[interval.id] ?? 0;
+              const isExpanded = expandedIntervals.has(interval.id);
+              const countries = intervalCountries[interval.id] || [];
+              const canExpand = countries.length > 0;
+              return (
+                <div key={interval.id}>
+                  {/* Interval row */}
+                  <div
+                    onClick={() => canExpand && setExpandedIntervals(prev => { const s = new Set(prev); s.has(interval.id) ? s.delete(interval.id) : s.add(interval.id); return s; })}
+                    style={{ display: 'flex', alignItems: 'center', padding: '7px 10px', borderBottom: '1px solid rgba(21,63,83,0.3)', background: i % 2 === 0 ? 'transparent' : 'rgba(0,50,74,0.12)', cursor: canExpand ? 'pointer' : 'default' }}
+                  >
+                    <div style={{ width: 18, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {canExpand && (
+                        <svg width="8" height="8" viewBox="0 0 8 8" style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s', color: 'rgba(128,176,200,0.5)' }}>
+                          <path d="M2.5 1.5L5.5 4L2.5 6.5" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, fontSize: 11, fontWeight: 500, fontFamily: F, color: 'rgba(204,223,233,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{interval.name}</div>
+                    <div style={{ width: 72, flexShrink: 0, fontSize: 11, fontWeight: 600, fontFamily: F, color: '#ffffff', textAlign: 'right' }}>{vCount.toLocaleString('de-DE')}</div>
+                  </div>
+                  {/* Country sub-rows */}
+                  {isExpanded && countries.map((row, ci) => (
+                    <div key={ci} style={{ display: 'flex', alignItems: 'center', padding: '5px 10px', background: 'rgba(0,20,34,0.55)', borderBottom: '1px solid rgba(21,63,83,0.15)' }}>
+                      <div style={{ width: 18, flexShrink: 0 }} />
+                      <div style={{ flex: 1, fontSize: 10, fontWeight: 400, fontFamily: F, color: 'rgba(128,176,200,0.7)', paddingLeft: 4 }}>{row.country}</div>
+                      <div style={{ width: 72, flexShrink: 0, fontSize: 10, fontWeight: 500, fontFamily: F, color: 'rgba(204,223,233,0.75)', textAlign: 'right' }}>{row.count.toLocaleString('de-DE')}</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
