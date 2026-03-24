@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npx @react-grab/claude-code@latest && vite",
     "build": "vite build",
+    "build:gh": "GITHUB_PAGES=true vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
