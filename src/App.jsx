@@ -200,6 +200,16 @@ export default function App() {
     setTimeout(() => { setShowDisclaimer(false); setDisclaimerClosing(false); }, 320);
   }
 
+  function openDisclaimer() {
+    if (showDisclaimer) return;
+    if (inputsRowRef.current) {
+      const rect = inputsRowRef.current.getBoundingClientRect();
+      setDisclaimerTop(rect.top);
+    }
+    setDisclaimerClosing(false);
+    setShowDisclaimer(true);
+  }
+
   function handleBrandChange(newBrand) {
     setDashVisible(false);
     setTimeout(() => {
@@ -412,7 +422,7 @@ export default function App() {
       {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <AppButton>Help</AppButton>
+          <AppButton onClick={openDisclaimer}>Help</AppButton>
           <AppButton primary onClick={handleLogin}>Login</AppButton>
         </div>
       </div>
